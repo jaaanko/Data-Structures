@@ -24,11 +24,10 @@ public class LinkedListDeque<T> {
 
     public LinkedListDeque(T i){
         sentinel = new TNode(null,null, null);
-        //create first item
         sentinel.next = new TNode(sentinel,i,sentinel);
         sentinel.prev = sentinel.next;
         size = 1;
-}
+    }
 
     public boolean isEmpty(){
         if(size == 0){
@@ -83,4 +82,29 @@ public class LinkedListDeque<T> {
         return null;
     }
 
+    public T get(int index){
+        TNode p = sentinel.next;
+        if(!isEmpty()){
+            while(index != 0){
+                p = p.next;
+                index--;
+            }
+            return p.item;
+        }
+        return null;
+    }
+
+    private T getRecursive(TNode p, int index){
+        if(isEmpty()){
+            return null;
+        }
+        else if(index == 0){
+            return p.item;
+        }
+        return getRecursive(p.next, index-1);
+    }
+
+    public T getRecursive(int index){
+        return getRecursive(sentinel.next, index);
+    }
 }
