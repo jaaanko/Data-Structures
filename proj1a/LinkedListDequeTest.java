@@ -1,3 +1,5 @@
+import java.lang.reflect.Array;
+
 /** Performs some basic linked list tests. */
 public class LinkedListDequeTest {
 	
@@ -86,7 +88,13 @@ public class LinkedListDequeTest {
 
 	public static void main(String[] args) {
 		System.out.println("Running tests.\n");
-		addIsEmptySizeTest();
-		addRemoveTest();
+		//addIsEmptySizeTest();
+		//addRemoveTest();
+		ArrayDeque<Integer> alist = new ArrayDeque<>();
+		alist.addFirst(7);
+		alist.addFirst(8);
+		alist.addLast(6);
+		alist.addFirst(5);
+		alist.printDeque();
 	}
 } 
