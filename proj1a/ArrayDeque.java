@@ -48,6 +48,9 @@ public class ArrayDeque <T>{
     }
 
     public T get(int index){
+        if(!isEmpty() && index < size && index >= 0){
+            return items[getIndex(index,nextFirst)];
+        }
         return null;
     }
 
@@ -62,18 +65,26 @@ public class ArrayDeque <T>{
         return size;
     }
 
-    public int minusOne(int index){
+    private int minusOne(int index){
         if(index == 0){
             return items.length - 1;
         }
         return index - 1;
     }
 
-    public int plusOne(int index){
+    private int plusOne(int index){
         if(index == items.length - 1){
             return 0;
         }
         return index + 1;
+    }
+
+    private int getIndex(int index, int nextFirst){
+        int x = plusOne(nextFirst) + index;
+        if(x >= items.length){
+            x = x - items.length;
+        }
+        return x;
     }
 
 }
