@@ -84,7 +84,7 @@ public class LinkedListDeque<T> {
 
     public T get(int index){
         TNode p = sentinel.next;
-        if(!isEmpty()){
+        if(!isEmpty() && index < size && index >= 0){
             while(index != 0){
                 p = p.next;
                 index--;
@@ -95,7 +95,7 @@ public class LinkedListDeque<T> {
     }
 
     private T getRecursive(TNode p, int index){
-        if(isEmpty()){
+        if(isEmpty() && index >= size && index < 0){
             return null;
         }
         else if(index == 0){
