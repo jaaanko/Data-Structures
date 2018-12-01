@@ -1,3 +1,9 @@
+/*
+    An array deque implementation that treats the array as circular.
+    (e.g. adding an item to the front when the current front index is 0, will add an item
+    to the back/last index of the array)
+    The initial front and back positions were chosen arbitrarily.
+*/
 public class ArrayDeque <T>{
     private T[] items;
     private int size;
@@ -99,6 +105,17 @@ public class ArrayDeque <T>{
         return x;
     }
 
+    /*
+        This resize() function:
+        1. Doubles the size of the array when the array gets full.
+        2. Halves the size of the array when less than 25% of the total space is used, and the
+           array length is 16 or more.
+        Example for #1:
+                              L  F
+        Before resize(): | 6, 7, 0, 1, 2, 3, 4, 5 |
+                         F                    L
+        After resize():| 0, 1, 2, 3, 4, 5, 6, 7, , , , , , , |
+     */
     private void resize(int capacity){
         T a[] = (T[]) new Object[capacity];
         int start = plusOne(nextFirst);
