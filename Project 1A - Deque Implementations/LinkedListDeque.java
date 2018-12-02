@@ -1,4 +1,4 @@
-// A deque (Double-ended queue) implementation that uses linked lists
+/** A deque (Double-ended queue) implementation that uses linked lists.  */
 public class LinkedListDeque<T> {
 
     private TNode sentinel;

@@ -1,7 +1,7 @@
-/*
+/**
     An array deque (double-ended queue) implementation that treats the array as circular.
     (e.g. adding an item to the front when the current front index is 0, will add an item
-    to the back/last index of the array)
+    to the back/last index of the array).
     The initial front and back positions were arbitrarily chosen.
 */
 public class ArrayDeque <T>{
@@ -105,7 +105,7 @@ public class ArrayDeque <T>{
         return x;
     }
 
-    /*
+    /**
         This function:
         1. Doubles the size of the array when the array gets full.
         2. Halves the size of the array when less than 25% of the total space is used, and the
