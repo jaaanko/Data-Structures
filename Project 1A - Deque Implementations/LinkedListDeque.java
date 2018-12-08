@@ -1,5 +1,5 @@
 /** A deque (Double-ended queue) implementation that uses linked lists.  */
-public class LinkedListDeque<T> implements Deque<Item>{
+public class LinkedListDeque<T> implements Deque<T>{
 
     private TNode sentinel;
     private int size;

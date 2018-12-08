@@ -4,7 +4,7 @@
     to the back/last index of the array).
     The initial front and back positions were arbitrarily chosen.
 */
-public class ArrayDeque<T> implements Deque<Item>{
+public class ArrayDeque<T> implements Deque<T>{
     private T[] items;
     private int size;
     private int nextFirst;
