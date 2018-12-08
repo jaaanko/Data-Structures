@@ -112,21 +112,28 @@ public class ArrayDeque<T> implements Deque<T>{
      array length is 16 or more.
 
      Example for scenario #1:
-     L  F
+                           L  F
      Before resize(): | 6, 7, 0, 1, 2, 3, 4, 5 |
-     F                    L
+                       F                    L
      After resize(): | 0, 1, 2, 3, 4, 5, 6, 7, , , , , , , |
      */
     private void resize(int capacity){
         T a[] = (T[]) new Object[capacity];
         int start = plusOne(nextFirst);
-        System.arraycopy(items,start,a,0,size - start);
-        if(start != 0){
-            System.arraycopy(items,0,a,size-start,start);
+        //A quick check to know if we are increasing or decreasing the size of the array.
+        if(size < items.length){
+            System.arraycopy(items,start,a,0,size);
+        }
+        else {
+            System.arraycopy(items, start, a, 0, size - start);
+            //Copy the items found in index 0 to nextFirst as they were not included in the arraycopy
+            //operation above. Skip if the start itself is at index 0, since everything is already copied.
+            if (start != 0) {
+                System.arraycopy(items, 0, a, size - start, start);
+            }
         }
         nextLast = size;
         items = a;
         nextFirst = items.length - 1;
     }
-
 }
