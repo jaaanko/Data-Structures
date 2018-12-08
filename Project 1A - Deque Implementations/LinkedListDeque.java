@@ -1,5 +1,5 @@
 /** A deque (Double-ended queue) implementation that uses linked lists.  */
-public class LinkedListDeque<T> {
+public class LinkedListDeque<T> implements Deque<Item>{
 
     private TNode sentinel;
     private int size;
@@ -29,30 +29,30 @@ public class LinkedListDeque<T> {
         sentinel.prev = sentinel.next;
         size = 1;
     }
-
+	@Override
     public boolean isEmpty(){
         if(size == 0){
             return true;
         }
         return false;
     }
-
+	@Override
     public int size(){
         return size;
     }
-
+	@Override
     public void addFirst(T item){
         sentinel.next = new TNode(sentinel,item,sentinel.next);
         sentinel.next.next.prev = sentinel.next;
         size++;
     }
-
+	@Override
     public void addLast(T item){
         sentinel.prev = new TNode(sentinel.prev,item,sentinel);
         sentinel.prev.prev.next = sentinel.prev;
         size++;
     }
-
+	@Override
     public void printDeque(){
         TNode p = sentinel.next;
         while(p!=sentinel){
@@ -60,7 +60,7 @@ public class LinkedListDeque<T> {
             p = p.next;
         }
     }
-
+	@Override
     public T removeFirst(){
         if(!isEmpty()) {
             T oldFirst = sentinel.next.item;
@@ -71,7 +71,7 @@ public class LinkedListDeque<T> {
         }
         return null;
     }
-
+	@Override
     public T removeLast(){
         if(!isEmpty()) {
             T oldLast = sentinel.prev.item;
@@ -82,7 +82,7 @@ public class LinkedListDeque<T> {
         }
         return null;
     }
-
+	@Override
     public T get(int index){
         TNode p = sentinel.next;
         if(!isEmpty() && index < size && index >= 0){
