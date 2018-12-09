@@ -4,9 +4,6 @@ public class OffByN implements CharacterComparator{
         this.N = Math.abs(N);
     }
     public boolean equalChars(char x, char y){
-        if(Math.abs(x - y) == N){
-            return true;
-        }
-        return false;
+        return Math.abs(x - y) == N;
     }
 }
