@@ -70,27 +70,15 @@ public class HexWorld {
     }
 
     private static int getRightXPos(int x, int size){
-        int rightXPos;
-        rightXPos = x + size + 2;
-        return rightXPos;
+        return x + size + 2;
     }
 
-    private static int getRightYPos(int y, int size){
-        int rightYPos;
-        rightYPos = y + size;
-        return rightYPos;
-    }
-
-    private static int getLeftYPos(int y, int size){
-        int getLeftYPos;
-        getLeftYPos = y + size;
-        return getLeftYPos;
+    private static int getYPos(int y, int size){
+        return y + size;
     }
 
     private static int getLeftXPos(int x, int size){
-        int getLeftXPos;
-        getLeftXPos = x - size - 2;
-        return getLeftXPos;
+        return x - size - 2;
     }
 
     private static void drawRowOfHexes(TETile[][] world, int x, int y, int size, int length){
@@ -100,14 +88,14 @@ public class HexWorld {
         int tempY = y;
         for(int i =0; i<length/2; i++) {
             tempX = getRightXPos(tempX, size);
-            tempY = getRightYPos(tempY, size);
+            tempY = getYPos(tempY, size);
             addHexagon(world, tempX, tempY, randomTile(), size);
         }
         tempX = x;
         tempY = y;
         for(int i= 0;i<length/2;i++){
             tempX = getLeftXPos(tempX, size);
-            tempY = getLeftYPos(tempY, size);
+            tempY = getYPos(tempY, size);
             addHexagon(world, tempX, tempY, randomTile(), size);
         }
     }
