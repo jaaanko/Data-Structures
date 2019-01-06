@@ -5,9 +5,8 @@ import byog.TileEngine.Tileset;
 class Room {
     private int width;
     private int height;
-    private static final int MAXWIDTH = 20;
-    private static final int MAXHEIGHT = 8;
-
+    static final int MAXROOMWIDTH = 9;
+    static final int MAXROOMHEIGHT = 10;
     //the x and y values mark the location of the top corner of the room
     private int x;
     private int y;

@@ -1,21 +1,23 @@
 package byog.Core;
 import byog.TileEngine.*;
+import java.util.Random;
 
 class Map {
-
     private int width;
     private int height;
     private TETile[][] world;
+    private Random rand;
 
-    Map(int width, int height){
+    Map(int width, int height, long seed){
         this.width = width;
         this.height = height;
         world = new TETile[width][height];
+        rand = new Random(seed);
     }
 
     TETile[][] generate(){
         fill();
-        createRooms();
+        createRooms(12);
         return world;
     }
 
@@ -27,8 +29,20 @@ class Map {
         }
     }
 
-    private void createRooms(){
-        Room r = new Room(world,8,7,20,15);
-        r.draw();
+    private void createRooms(int count){
+        int rX;
+        int rY;
+        int rWidth;
+        int rHeight;
+
+        for(int i=0; i<count; i++) {
+            rX = rand.nextInt(width - Room.MAXROOMWIDTH);
+            rY = rand.nextInt(height - Room.MAXROOMHEIGHT) + Room.MAXROOMHEIGHT;
+
+            rWidth = rand.nextInt(Room.MAXROOMWIDTH - 2) + 2;
+            rHeight = rand.nextInt(Room.MAXROOMHEIGHT - 2) + 2;
+            Room r = new Room(world, rWidth, rHeight, rX, rY);
+            r.draw();
+        }
     }
 }
