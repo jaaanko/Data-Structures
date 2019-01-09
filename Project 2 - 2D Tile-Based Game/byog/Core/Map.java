@@ -1,5 +1,7 @@
 package byog.Core;
 import byog.TileEngine.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 class Map {
@@ -7,6 +9,8 @@ class Map {
     private int height;
     private TETile[][] world;
     private Random rand;
+    private int roomCount = 15;
+    static List<Room> rooms = new ArrayList<>();
 
     Map(int width, int height, long seed){
         this.width = width;
@@ -17,7 +21,7 @@ class Map {
 
     TETile[][] generate(){
         fill();
-        createRooms(12);
+        createRooms(roomCount);
         return world;
     }
 
@@ -38,10 +42,20 @@ class Map {
         for(int i=0; i<count; i++) {
             rX = rand.nextInt(width - Room.MAXROOMWIDTH);
             rY = rand.nextInt(height - Room.MAXROOMHEIGHT) + Room.MAXROOMHEIGHT;
-
             rWidth = rand.nextInt(Room.MAXROOMWIDTH - 2) + 2;
             rHeight = rand.nextInt(Room.MAXROOMHEIGHT - 2) + 2;
+
             Room r = new Room(world, rWidth, rHeight, rX, rY);
+
+            for(int j=0; j<rooms.size(); j++) {
+                while (r.isOverlap(rooms.get(j))){
+                    rX = rand.nextInt(width - Room.MAXROOMWIDTH);
+                    rY = rand.nextInt(height - Room.MAXROOMHEIGHT) + Room.MAXROOMHEIGHT;
+                    r = new Room(world, rWidth, rHeight, rX, rY);
+                    j = 0;
+                }
+            }
+            rooms.add(r);
             r.draw();
         }
     }

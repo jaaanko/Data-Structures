@@ -23,10 +23,7 @@ class Room {
 
     void draw(){
         drawWalls();
-        //draw the floor
-        for(int i=0; i<height-2; i++){
-            drawRow(x+1,y-(i+1),width-2, Tileset.FLOOR);
-        }
+        drawFloor();
     }
 
     private void drawWalls(){
@@ -39,6 +36,12 @@ class Room {
         drawRow(x+1,y-(height-1),width-1,t);
         //draw right wall
         drawColumn(x+(width-1),y-1,height-1,t);
+    }
+
+    private void drawFloor(){
+        for(int i=0; i<height-2; i++){
+            drawRow(x+1,y-(i+1),width-2, Tileset.FLOOR);
+        }
     }
 
     //draws a row from left to right
@@ -58,5 +61,20 @@ class Room {
         }
     }
 
+    boolean isOverlap(Room r){
+        int tempY = this.y;
+        int tempX;
+        for(int i=0; i<this.height; i++){
+            tempX = this.x;
+            for(int j=0; j<this.width; j++){
+                if((r.x <= tempX && tempX <= (r.x + r.width)) && (r.y >= tempY && tempY >= (r.y - r.height))){
+                    return true;
+                }
+                tempX ++;
+            }
+            tempY --;
+        }
+        return false;
+    }
 
 }
