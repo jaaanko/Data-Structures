@@ -8,7 +8,8 @@ public class MapLauncher {
     public static void main(String[] args){
         TERenderer ter = new TERenderer();
         ter.initialize(WIDTH, HEIGHT);
-        Map m = new Map(WIDTH,HEIGHT,789785);
+        //75212
+        Map m = new Map(WIDTH,HEIGHT,75212);
         TETile[][] map = m.generate();
         ter.renderFrame(map);
 

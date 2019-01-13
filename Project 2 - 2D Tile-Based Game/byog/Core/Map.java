@@ -11,11 +11,13 @@ class Map {
     private Random rand;
     private int roomCount = 15;
     static List<Room> rooms = new ArrayList<>();
+    private long seed;
 
     Map(int width, int height, long seed){
         this.width = width;
         this.height = height;
         world = new TETile[width][height];
+        this.seed = seed;
         rand = new Random(seed);
     }
 
@@ -42,21 +44,27 @@ class Map {
         for(int i=0; i<count; i++) {
             rX = rand.nextInt(width - Room.MAXROOMWIDTH);
             rY = rand.nextInt(height - Room.MAXROOMHEIGHT) + Room.MAXROOMHEIGHT;
-            rWidth = rand.nextInt(Room.MAXROOMWIDTH - 2) + 2;
-            rHeight = rand.nextInt(Room.MAXROOMHEIGHT - 2) + 2;
+            rWidth = rand.nextInt(Room.MAXROOMWIDTH - 3) + 3;
+            rHeight = rand.nextInt(Room.MAXROOMHEIGHT - 3) + 3;
 
-            Room r = new Room(world, rWidth, rHeight, rX, rY);
-
+            Room r = new Room(world, seed, rWidth, rHeight, rX, rY);
+            /* Check if the new room overlaps with any existing rooms.
+               If it does, generate new coordinates for the room and loop through the list of rooms again.
+               If there is no overlap, add the new room to the rooms list and draw it on the map
+             */
             for(int j=0; j<rooms.size(); j++) {
                 while (r.isOverlap(rooms.get(j))){
                     rX = rand.nextInt(width - Room.MAXROOMWIDTH);
                     rY = rand.nextInt(height - Room.MAXROOMHEIGHT) + Room.MAXROOMHEIGHT;
-                    r = new Room(world, rWidth, rHeight, rX, rY);
+                    r = new Room(world, seed, rWidth, rHeight, rX, rY);
                     j = 0;
                 }
             }
             rooms.add(r);
             r.draw();
+        }
+        for(int i=0; i<rooms.size()-1; i++){
+            rooms.get(i).connectTo(rooms.get(i+1));
         }
     }
 }
