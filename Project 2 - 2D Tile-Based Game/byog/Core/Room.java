@@ -53,13 +53,20 @@ class Room {
         int startPos = x;
         if(direction.equals("right")) {
             for (int i = 0; i < length; i++) {
-                world[startPos][y] = t;
+                /* This check (and also the one below) is mainly to ensure that the walls generated during hallway generation
+                will not overlap a floor tile at any point.
+                 */
+                if(!(world[startPos][y].equals(Tileset.FLOOR))) {
+                    world[startPos][y] = t;
+                }
                 startPos++;
             }
         }
         else{
             for (int i = 0; i < length; i++) {
-                world[startPos][y] = t;
+                if(!(world[startPos][y].equals(Tileset.FLOOR))) {
+                    world[startPos][y] = t;
+                }
                 startPos--;
             }
         }
@@ -69,13 +76,20 @@ class Room {
         int startPos = y;
         if(direction.equals("down")) {
             for (int i = 0; i < length; i++) {
-                world[x][startPos] = t;
+                /* This check (and also the one below) is mainly to ensure that the walls generated during hallway generation
+                will not overlap a floor tile at any point.
+                 */
+                if(!(world[x][startPos].equals(Tileset.FLOOR))) {
+                    world[x][startPos] = t;
+                }
                 startPos--;
             }
         }
         else{
             for (int i = 0; i < length; i++) {
-                world[x][startPos] = t;
+                if(!(world[x][startPos].equals(Tileset.FLOOR))) {
+                    world[x][startPos] = t;
+                }
                 startPos++;
             }
         }
@@ -83,16 +97,38 @@ class Room {
 
     private void drawVerticalHallway(int x, int y, int length, String direction){
         length = Math.abs(length);
-        //drawColumn(x+1,y,length,Tileset.WALL,direction);
+        drawColumn(x+1,y,length+1,Tileset.WALL,direction);
         drawColumn(x,y,length,Tileset.FLOOR,direction);
-        //drawColumn(x-1,y,length,Tileset.WALL,direction);
+        drawColumn(x-1,y,length+1,Tileset.WALL,direction);
+        //draw corners
+        if(direction.equals("down")) {
+            if(!(world[x][y-length].equals(Tileset.FLOOR))) {
+                world[x][y - length] = Tileset.WALL;
+            }
+        }
+        else{
+            if(!(world[x][y+length].equals(Tileset.FLOOR))) {
+                world[x][y + length] = Tileset.WALL;
+            }
+        }
     }
 
     private void drawHorizontalHallway(int x, int y, int length, String direction){
         length = Math.abs(length);
-        //drawRow(x,y+1,length,Tileset.WALL,direction);
+        drawRow(x,y+1,length+1,Tileset.WALL,direction);
         drawRow(x,y,length,Tileset.FLOOR,direction);
-        //drawRow(x,y-1,length,Tileset.WALL,direction);
+        drawRow(x,y-1,length+1,Tileset.WALL,direction);
+
+        if(direction.equals("left")) {
+            if(!(world[x-length][y].equals(Tileset.FLOOR))){
+                world[x - length][y] = Tileset.WALL;
+            }
+        }
+        else{
+            if(!(world[x+length][y].equals(Tileset.FLOOR))){
+                world[x + length][y] = Tileset.WALL;
+            }
+        }
     }
     //draws a hallway that connects this room to the given room
     void connectTo(Room r){

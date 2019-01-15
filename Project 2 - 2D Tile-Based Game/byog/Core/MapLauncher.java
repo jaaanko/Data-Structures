@@ -9,7 +9,9 @@ public class MapLauncher {
         TERenderer ter = new TERenderer();
         ter.initialize(WIDTH, HEIGHT);
         //75212
-        Map m = new Map(WIDTH,HEIGHT,75212);
+        //856784225
+        //2148772 ISOLATED ROOM
+        Map m = new Map(WIDTH,HEIGHT,2148772);
         TETile[][] map = m.generate();
         ter.renderFrame(map);
 
