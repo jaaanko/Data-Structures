@@ -100,7 +100,7 @@ class Room {
         drawColumn(x+1,y,length+1,Tileset.WALL,direction);
         drawColumn(x,y,length,Tileset.FLOOR,direction);
         drawColumn(x-1,y,length+1,Tileset.WALL,direction);
-        //draw corners
+        //draws corners
         if(direction.equals("down")) {
             if(!(world[x][y-length].equals(Tileset.FLOOR))) {
                 world[x][y - length] = Tileset.WALL;
@@ -118,7 +118,7 @@ class Room {
         drawRow(x,y+1,length+1,Tileset.WALL,direction);
         drawRow(x,y,length,Tileset.FLOOR,direction);
         drawRow(x,y-1,length+1,Tileset.WALL,direction);
-
+        //draws corners
         if(direction.equals("left")) {
             if(!(world[x-length][y].equals(Tileset.FLOOR))){
                 world[x - length][y] = Tileset.WALL;
@@ -137,8 +137,13 @@ class Room {
         int length1,length2;
         int yPos1 = rand.nextInt((y-(y-(height-2))))+(y-(height-2));
         int yPos2 = rand.nextInt((r.y-(r.y-(r.height-2))))+(r.y-(r.height-2));
+        int xPos1 = rand.nextInt(((x+width-1)-(x)))+(x);
+        int xPos2 = rand.nextInt(((r.x+r.width-1)-(r.x)))+(r.x);
+
+        //checks if room 1 is to the left or right of room 2
         if(x+width < r.x || r.x+r.width < x){
             if(x-r.x < 0){
+                //checks if the rooms are adjacent
                 if((r.x) - (x+width+1) <= 0){
                     drawHorizontalHallway(r.x,yPos2,3,"left");
                 }
@@ -146,13 +151,15 @@ class Room {
                     end = rand.nextInt((r.x) - (x + width + 1)) + (x + width + 1);
                     length1 = end - (x + width)+1;
                     length2 = end - r.x;
+                    //draws the connection hallway
                     if(yPos1 > yPos2) {
                         drawVerticalHallway(x + width + length1, yPos1-1,yPos1-yPos2,"down");
                     }
                     else{
                         drawVerticalHallway(x + width + length1, yPos1+1,yPos2-yPos1,"up");
                     }
-                    drawHorizontalHallway(x + width - 1, yPos1, length1+2, "right");
+                    //draws the hallways that branches off rooms 1 and 2
+                    drawHorizontalHallway(x + (width - 1), yPos1, length1+2, "right");
                     drawHorizontalHallway(r.x, yPos2, length2+1, "left");
                 }
             }
@@ -171,7 +178,47 @@ class Room {
                         drawVerticalHallway(r.x + r.width + length1, yPos2+1,yPos1-yPos2,"up");
                     }
                     drawHorizontalHallway(x,yPos1,length2+1,"left");
-                    drawHorizontalHallway(r.x+r.width-1,yPos2,length1+2, "right");
+                    drawHorizontalHallway(r.x+(r.width-1),yPos2,length1+2, "right");
+                }
+            }
+        }
+        else {
+            //if room 1 is below room 2
+            if (y - r.y < 0) {
+                if((r.y-height-1) - (y) <= 0){
+                    drawVerticalHallway(xPos2,r.y,3,"up");
+                }
+                else{
+                    end = rand.nextInt((r.y- (r.height - 1)) - (y)) + (y);
+                    length1 = end - y;
+                    length2 = (r.y - (r.height -1)) - end;
+                    //System.out.println(length1 + " "+ (xPos1-1));
+                    if(xPos1 > xPos2) {
+                        drawHorizontalHallway(xPos1-1,y+length1,xPos1-xPos2,"left");
+                    }
+                    else{
+                        drawHorizontalHallway(xPos1+1,y+length1,xPos2-xPos1,"right");
+                    }
+                    drawVerticalHallway(xPos1,y,length1+1,"up");
+                    drawVerticalHallway(xPos2, r.y - (r.height - 1), length2+2, "down");
+                }
+            }
+            else {
+                if((y-height-1)-(r.y) <= 0){
+                    drawVerticalHallway(xPos1,y,3,"up");
+                }
+                else{
+                    end = rand.nextInt((y-(height-1))-(r.y)) + (r.y);
+                    length1 = end - r.y;
+                    length2 = (y-(height-1))-end;
+                    if(xPos2 > xPos1) {
+                        drawHorizontalHallway(xPos2-1, r.y + length1,xPos2-xPos1,"left");
+                    }
+                    else{
+                        drawHorizontalHallway(xPos2+1, r.y + length1,xPos1-xPos2,"right");
+                    }
+                    drawVerticalHallway(xPos1,y-(height-1),length2+2,"down");
+                    drawVerticalHallway(xPos2,r.y,length1+1, "up");
                 }
             }
         }

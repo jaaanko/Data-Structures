@@ -10,8 +10,8 @@ public class MapLauncher {
         ter.initialize(WIDTH, HEIGHT);
         //75212
         //856784225
-        //2148772 ISOLATED ROOM
-        Map m = new Map(WIDTH,HEIGHT,2148772);
+        //2148772
+        Map m = new Map(WIDTH,HEIGHT,75212);
         TETile[][] map = m.generate();
         ter.renderFrame(map);
 
