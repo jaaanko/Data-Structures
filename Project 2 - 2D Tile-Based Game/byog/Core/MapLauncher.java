@@ -11,7 +11,7 @@ public class MapLauncher {
         //75212
         //856784225
         //2148772
-        Map m = new Map(WIDTH,HEIGHT,75212);
+        Map m = new Map(WIDTH,HEIGHT,856784225);
         TETile[][] map = m.generate();
         ter.renderFrame(map);
 

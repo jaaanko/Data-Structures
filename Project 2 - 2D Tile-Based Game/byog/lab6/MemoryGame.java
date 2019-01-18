@@ -4,6 +4,7 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
 import java.awt.Font;
+
 import java.util.Random;
 
 public class MemoryGame {
@@ -24,12 +25,12 @@ public class MemoryGame {
             return;
         }
 
-        int seed = Integer.parseInt(args[0]);
-        MemoryGame game = new MemoryGame(40, 40);
+        long seed = Integer.parseInt(args[0]);
+        MemoryGame game = new MemoryGame(40, 40, seed);
         game.startGame();
     }
 
-    public MemoryGame(int width, int height) {
+    public MemoryGame(int width, int height, long seed) {
         /* Sets up StdDraw so that it has a width by height grid of 16 by 16 squares as its canvas
          * Also sets up the scale so the top left is (0,0) and the bottom right is (width, height)
          */
@@ -42,33 +43,89 @@ public class MemoryGame {
         StdDraw.setYscale(0, this.height);
         StdDraw.clear(Color.BLACK);
         StdDraw.enableDoubleBuffering();
-
-        //TODO: Initialize random number generator
+        rand = new Random(seed);
     }
 
     public String generateRandomString(int n) {
-        //TODO: Generate random string of letters of length n
-        return null;
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i<n; i++){
+            sb.append(CHARACTERS[rand.nextInt(CHARACTERS.length)]);
+        }
+        return sb.toString();
     }
 
     public void drawFrame(String s) {
-        //TODO: Take the string and display it in the center of the screen
-        //TODO: If game is not over, display relevant game information at the top of the screen
+        Font font;
+        StdDraw.clear(Color.BLACK);
+        StdDraw.setPenColor(StdDraw.WHITE);
+
+        if(!gameOver){
+            font = new Font("Monaco", Font.BOLD, 20);
+            StdDraw.setFont(font);
+            StdDraw.line(0,height-2,width,height-2);
+            StdDraw.text(3,height-1,"Round: " + round);
+            if(!playerTurn) {
+                StdDraw.text(width/2, height - 1, "Watch!");
+            }
+            else{
+                StdDraw.text(width/2, height - 1, "Type!");
+            }
+            Random randmsg = new Random(round);
+            StdDraw.textRight(width-1,height-1,ENCOURAGEMENT[randmsg.nextInt(ENCOURAGEMENT.length)]);
+        }
+
+        font = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(font);
+        StdDraw.text(width/2,height/2,s);
+        StdDraw.show();
     }
 
     public void flashSequence(String letters) {
-        //TODO: Display each character in letters, making sure to blank the screen between letters
+        char[] chars = letters.toCharArray();
+        for(char c : chars) {
+            drawFrame(Character.toString(c));
+            StdDraw.pause(1000);
+            drawFrame("");
+            StdDraw.pause(500);
+        }
     }
 
     public String solicitNCharsInput(int n) {
-        //TODO: Read n letters of player input
-        return null;
+        StringBuilder input = new StringBuilder("");
+        int count = 0;
+        while(count < n) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char key = StdDraw.nextKeyTyped();
+                input.append(key);
+                drawFrame(input.toString());
+                count++;
+            }
+        }
+        return input.toString();
     }
 
     public void startGame() {
-        //TODO: Set any relevant variables before the game starts
-
-        //TODO: Establish Game loop
+        round = 1;
+        gameOver = false;
+        playerTurn = false;
+        String randomString;
+        while(!gameOver) {
+            drawFrame("Round: " + round);
+            StdDraw.pause(1000);
+            randomString = generateRandomString(round);
+            flashSequence(randomString);
+            playerTurn = true;
+            if(solicitNCharsInput(round).equals(randomString)){
+                StdDraw.pause(1000);
+                round++;
+            }
+            else{
+                gameOver = true;
+                drawFrame("Game Over! You made it to round: " + round);
+                StdDraw.pause(1000);
+            }
+            playerTurn = false;
+        }
     }
 
 }

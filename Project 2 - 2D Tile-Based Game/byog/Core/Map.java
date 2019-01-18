@@ -9,7 +9,8 @@ class Map {
     private int height;
     private TETile[][] world;
     private Random rand;
-    private int roomCount = 15;
+    private final static int MAXROOMS = 15;
+    private final static int MINROOMS = 10;
     static List<Room> rooms = new ArrayList<>();
     private long seed;
 
@@ -23,7 +24,7 @@ class Map {
 
     TETile[][] generate(){
         fill();
-        createRooms(roomCount);
+        createRooms(rand.nextInt((MAXROOMS - MINROOMS) + 1) + MINROOMS);
         return world;
     }
 
