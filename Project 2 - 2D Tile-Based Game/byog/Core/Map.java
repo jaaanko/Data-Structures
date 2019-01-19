@@ -11,7 +11,7 @@ class Map {
     private Random rand;
     private final static int MAXROOMS = 15;
     private final static int MINROOMS = 10;
-    static List<Room> rooms = new ArrayList<>();
+    private List<Room> rooms = new ArrayList<>();
     private long seed;
 
     Map(int width, int height, long seed){

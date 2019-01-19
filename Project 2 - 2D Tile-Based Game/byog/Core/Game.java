@@ -6,8 +6,8 @@ import byog.TileEngine.TETile;
 public class Game {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
-    public static final int WIDTH = 80;
-    public static final int HEIGHT = 30;
+    public static final int WIDTH = 70;
+    public static final int HEIGHT = 40;
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
@@ -28,11 +28,42 @@ public class Game {
      * @return the 2D TETile[][] representing the state of the world
      */
     public TETile[][] playWithInputString(String input) {
-        // TODO: Fill out this method to run the game using the input passed in,
-        // and return a 2D tile representation of the world that would have been
-        // drawn if the same inputs had been given to playWithKeyboard().
-
-        TETile[][] finalWorldFrame = null;
-        return finalWorldFrame;
+        if(Character.toUpperCase(input.charAt(0)) == 'N'){
+            if(Character.isDigit(input.charAt(1))){
+                if(getStopIndex(input) > 0) {
+                    TERenderer ter = new TERenderer();
+                    ter.initialize(WIDTH, HEIGHT);
+                    int seed = Integer.parseInt(input.substring(1, getStopIndex(input)));
+                    Map m = new Map(WIDTH, HEIGHT, seed);
+                    TETile[][] world = m.generate();
+                    ter.renderFrame(world);
+                    return world;
+                }
+            }
+        }
+        else if(Character.toUpperCase(input.charAt(0)) == 'L'){
+            System.out.println("LOAD");
+        }
+        else if(Character.toUpperCase(input.charAt(0)) == 'Q'){
+            System.out.println("QUIT");
+            System.exit(0);
+        }
+        return null;
     }
+
+    private int getStopIndex(String input){
+        int i;
+        boolean found = false;
+        for(i=0; i<input.length();i++){
+            if(Character.toUpperCase(input.charAt(i)) == 'S'){
+                found = true;
+                break;
+            }
+        }
+        if(!found){
+            return -1;
+        }
+        return i;
+    }
+
 }

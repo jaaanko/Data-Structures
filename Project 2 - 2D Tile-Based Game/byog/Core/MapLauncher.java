@@ -8,9 +8,11 @@ public class MapLauncher {
     public static void main(String[] args){
         TERenderer ter = new TERenderer();
         ter.initialize(WIDTH, HEIGHT);
-        //75212
-        //856784225
-        //2148772
+        /*Seeds of interest:
+            75212
+            856784225
+            2148772
+        */
         Map m = new Map(WIDTH,HEIGHT,856784225);
         TETile[][] map = m.generate();
         ter.renderFrame(map);
