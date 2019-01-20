@@ -2,19 +2,106 @@ package byog.Core;
 
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
+import edu.princeton.cs.introcs.StdDraw;
+
+import java.awt.*;
 
 public class Game {
     TERenderer ter = new TERenderer();
-    /* Feel free to change the width and height. */
     public static final int WIDTH = 70;
     public static final int HEIGHT = 40;
-
+    public static final int MIDHEIGHT = HEIGHT/2;
+    public static final int MIDWIDTH = WIDTH/2;
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
      */
     public void playWithKeyboard() {
+        StdDraw.setCanvasSize(WIDTH*16, (HEIGHT+2)*16);
+        StdDraw.setXscale(0, WIDTH);
+        StdDraw.setYscale(0, HEIGHT+2);
+
+        draw();
+        char input = readMenuInput();
+        if(input == 'N'){
+            //Get seed and start game
+            Map m = new Map(WIDTH,HEIGHT,getSeed());
+            ter.initialize(WIDTH, HEIGHT+2);
+
+            TETile[][] world = m.generate();
+            ter.renderFrame(world);
+            Font smallFont = new Font("Monaco", Font.BOLD, 15);
+
+            StdDraw.setFont(smallFont);
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.textRight(20,HEIGHT+1,"TEST");
+            StdDraw.show();
+        }
+        else if(input == 'L') {
+            //Load saved game if it exists
+        }
+
     }
 
+    private void draw(int x, int y, String s){
+        StdDraw.clear(Color.BLACK);
+        StdDraw.enableDoubleBuffering();
+        Font titleFont = new Font("Monaco", Font.BOLD, 30);
+        Font smallFont = new Font("Monaco", Font.BOLD, 20);
+
+        StdDraw.setFont(titleFont);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.text(MIDWIDTH,MIDHEIGHT+10,"GAME (Temporary Name)");
+
+        StdDraw.setFont(smallFont);
+        StdDraw.text(MIDWIDTH,MIDHEIGHT,"New Game (N)");
+        StdDraw.text(MIDWIDTH,MIDHEIGHT-3,"Load Game(L)");
+        StdDraw.text(MIDWIDTH,MIDHEIGHT-6,"Quit (Q)");
+
+        StdDraw.text(x,y,s);
+
+        StdDraw.show();
+    }
+
+    private void draw(){
+        draw(0,0,"");
+    }
+
+    private char readMenuInput(){
+
+        while(true) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char input = StdDraw.nextKeyTyped();
+                if (Character.toUpperCase(input) == 'N') {
+                    draw(MIDWIDTH, MIDHEIGHT - 10, "Enter Seed: ");
+                    return 'N';
+                } else if (Character.toUpperCase(input) == 'L') {
+                    draw(MIDWIDTH, MIDHEIGHT - 10, "Load ");
+                    return 'L';
+                } else if (Character.toUpperCase(input) == 'Q') {
+                    System.exit(0);
+                }
+            }
+        }
+    }
+
+    private int getSeed(){
+        char c;
+        StringBuilder sb = new StringBuilder();
+        while(true){
+            if(StdDraw.hasNextKeyTyped()){
+                c = StdDraw.nextKeyTyped();
+                if(Character.isDigit(c)){
+                    sb.append(c);
+                    draw(MIDWIDTH, MIDHEIGHT - 10, "Enter Seed: " + sb);
+                }
+                else if(Character.toUpperCase(c) == 'S' && sb.length() > 0){
+                    break;
+                }
+            }
+        }
+        System.out.println(sb);
+        return Integer.parseInt(sb.toString());
+    }
     /**
      * Method used for autograding and testing the game code. The input string will be a series
      * of characters (for example, "n123sswwdasdassadwas", "n123sss:q", "lwww". The game should
@@ -31,13 +118,9 @@ public class Game {
         if(Character.toUpperCase(input.charAt(0)) == 'N'){
             if(Character.isDigit(input.charAt(1))){
                 if(getStopIndex(input) > 0) {
-                    TERenderer ter = new TERenderer();
-                    ter.initialize(WIDTH, HEIGHT);
                     int seed = Integer.parseInt(input.substring(1, getStopIndex(input)));
                     Map m = new Map(WIDTH, HEIGHT, seed);
-                    TETile[][] world = m.generate();
-                    ter.renderFrame(world);
-                    return world;
+                    return m.generate();
                 }
             }
         }

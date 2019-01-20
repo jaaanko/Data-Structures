@@ -13,6 +13,8 @@ class Map {
     private final static int MINROOMS = 10;
     private List<Room> rooms = new ArrayList<>();
     private long seed;
+    int playerX;
+    int playerY;
 
     Map(int width, int height, long seed){
         this.width = width;
@@ -25,6 +27,7 @@ class Map {
     TETile[][] generate(){
         fill();
         createRooms(rand.nextInt((MAXROOMS - MINROOMS) + 1) + MINROOMS);
+        spawnPlayer();
         return world;
     }
 
@@ -67,5 +70,12 @@ class Map {
         for(int i=0; i<rooms.size()-1; i++){
             rooms.get(i).connectTo(rooms.get(i+1));
         }
+    }
+    //Spawns the player in a random room
+    private void spawnPlayer(){
+        Room r = rooms.get(rand.nextInt(rooms.size()));
+        playerX = rand.nextInt((r.x + (r.width-1)) - (r.x+1)) + (r.x+1);
+        playerY = rand.nextInt(r.y - (r.y - (r.height-2))) + (r.y - (r.height-2));
+        world[playerX][playerY] = Tileset.PLAYER;
     }
 }

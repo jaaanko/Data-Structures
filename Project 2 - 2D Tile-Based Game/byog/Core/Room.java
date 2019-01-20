@@ -5,13 +5,13 @@ import byog.TileEngine.Tileset;
 import java.util.Random;
 
 class Room {
-    private int width;
-    private int height;
+    int width;
+    int height;
     static final int MAXROOMWIDTH = 9;
     static final int MAXROOMHEIGHT = 10;
     //The x and y values mark the location of the top corner of the room
-    private int x;
-    private int y;
+    int x;
+    int y;
     private TETile[][] world;
     private long seed;
 
@@ -138,17 +138,17 @@ class Room {
         int length1,length2;
         int yPos1 = rand.nextInt((y-(y-(height-2))))+(y-(height-2));
         int yPos2 = rand.nextInt((r.y-(r.y-(r.height-2))))+(r.y-(r.height-2));
-        int xPos1 = rand.nextInt(((x+width-1)-(x)))+(x);
-        int xPos2 = rand.nextInt(((r.x+r.width-1)-(r.x)))+(r.x);
+        int xPos1 = rand.nextInt(((x+width-1)-(x+1)))+(x+1);
+        int xPos2 = rand.nextInt(((r.x+r.width-1)-(r.x+1)))+(r.x+1);
 
         if(x+width < r.x || r.x+r.width < x){
             //If room 1 is to the left of room 2
             if(x-r.x < 0){
-                if((r.x) - (x+width+1) <= 0){
+                if((r.x) - (x+width+1) <  0){
                     drawHorizontalHallway(r.x,yPos2,3,"left");
                 }
                 else {
-                    end = rand.nextInt((r.x) - (x + width + 1)) + (x + width + 1);
+                    end = rand.nextInt((r.x) - (x + (width - 1))) + (x + (width - 1));
                     length1 = end - (x + width)+1;
                     length2 = end - r.x;
                     //Draws the vertical connection hallway
@@ -165,11 +165,11 @@ class Room {
             }
             //If room 2 is to the left of room 1
             else{
-                if((x)-(r.x+r.width+1) <= 0){
+                if((x)-(r.x+r.width+1) < 0){
                     drawHorizontalHallway(x,yPos1,3,"left");
                 }
                 else{
-                    end = rand.nextInt((x)-(r.x+r.width+1)) + (r.x+r.width+1);
+                    end = rand.nextInt((x)-(r.x+r.width-1)) + (r.x+r.width-1);
                     length1 = end-(r.x+r.width)+1;
                     length2 = end - x;
                     //Draws the vertical connection hallway
@@ -189,7 +189,7 @@ class Room {
         else {
             //If room 1 is below room 2
             if (y - r.y < 0) {
-                if((r.y-height-1) - (y) <= 0){
+                if((r.y-r.height-1) - (y) < 0){
                     drawVerticalHallway(xPos2,r.y,3,"up");
                 }
                 else{
@@ -210,7 +210,7 @@ class Room {
             }
             //If room 2 is below room 1
             else {
-                if((y-height-1)-(r.y) <= 0){
+                if((y-height-1)-(r.y) < 0){
                     drawVerticalHallway(xPos1,y,3,"up");
                 }
                 else{
