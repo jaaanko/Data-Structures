@@ -12,6 +12,7 @@ public class Game {
     public static final int HEIGHT = 40;
     public static final int MIDHEIGHT = HEIGHT/2;
     public static final int MIDWIDTH = WIDTH/2;
+
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
      */
@@ -24,17 +25,14 @@ public class Game {
         char input = readMenuInput();
         if(input == 'N'){
             //Get seed and start game
-            Map m = new Map(WIDTH,HEIGHT,getSeed());
-            ter.initialize(WIDTH, HEIGHT+2);
-
-            TETile[][] world = m.generate();
-            ter.renderFrame(world);
+            startGame(getSeed());
+            /*
             Font smallFont = new Font("Monaco", Font.BOLD, 15);
-
             StdDraw.setFont(smallFont);
             StdDraw.setPenColor(StdDraw.WHITE);
             StdDraw.textRight(20,HEIGHT+1,"TEST");
-            StdDraw.show();
+            StdDraw.show();*/
+            //StdDraw.mouseX()
         }
         else if(input == 'L') {
             //Load saved game if it exists
@@ -42,9 +40,35 @@ public class Game {
 
     }
 
+    private void startGame(int seed){
+        Map m = new Map(WIDTH,HEIGHT,seed);
+        ter.initialize(WIDTH, HEIGHT+2);
+
+        TETile[][] world = m.generate();
+        ter.renderFrame(world);
+
+        Font smallFont = new Font("Monaco", Font.BOLD, 15);
+        StdDraw.setFont(smallFont);
+
+        while(true){
+
+            if((StdDraw.mouseX() < WIDTH && StdDraw.mouseY() < HEIGHT)) {
+
+                TETile t = world[(int) StdDraw.mouseX()][(int) StdDraw.mouseY()];
+                StdDraw.pause(50);
+                ter.renderFrame(world);
+
+                StdDraw.setPenColor(StdDraw.WHITE);
+                StdDraw.textRight(20, HEIGHT + 1, t.description());
+
+                StdDraw.show();
+
+            }
+        }
+    }
+
     private void draw(int x, int y, String s){
         StdDraw.clear(Color.BLACK);
-        StdDraw.enableDoubleBuffering();
         Font titleFont = new Font("Monaco", Font.BOLD, 30);
         Font smallFont = new Font("Monaco", Font.BOLD, 20);
 
@@ -67,7 +91,6 @@ public class Game {
     }
 
     private char readMenuInput(){
-
         while(true) {
             if (StdDraw.hasNextKeyTyped()) {
                 char input = StdDraw.nextKeyTyped();
@@ -102,6 +125,7 @@ public class Game {
         System.out.println(sb);
         return Integer.parseInt(sb.toString());
     }
+
     /**
      * Method used for autograding and testing the game code. The input string will be a series
      * of characters (for example, "n123sswwdasdassadwas", "n123sss:q", "lwww". The game should
