@@ -12,8 +12,8 @@ class Room {
     //The x and y values mark the location of the top corner of the room
     int x;
     int y;
-    private TETile[][] world;
-    private long seed;
+    TETile[][] world;
+    long seed;
 
     Room(TETile[][] world, long seed, int width, int height, int x, int y){
         //Increment width and height to account for the walls

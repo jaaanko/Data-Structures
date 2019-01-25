@@ -2,16 +2,22 @@ package byog.Core;
 
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
+import byog.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
 
 public class Game {
     TERenderer ter = new TERenderer();
-    public static final int WIDTH = 70;
-    public static final int HEIGHT = 40;
-    public static final int MIDHEIGHT = HEIGHT/2;
-    public static final int MIDWIDTH = WIDTH/2;
+    static final int WIDTH = 70;
+    static final int HEIGHT = 40;
+    static final int MIDHEIGHT = HEIGHT/2;
+    static final int MIDWIDTH = WIDTH/2;
+    TETile[][] world;
+    boolean gameOver;
+    int playerX;
+    int playerY;
+
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
@@ -21,18 +27,12 @@ public class Game {
         StdDraw.setXscale(0, WIDTH);
         StdDraw.setYscale(0, HEIGHT+2);
 
-        draw();
+        drawMenu();
         char input = readMenuInput();
         if(input == 'N'){
             //Get seed and start game
             startGame(getSeed());
-            /*
-            Font smallFont = new Font("Monaco", Font.BOLD, 15);
-            StdDraw.setFont(smallFont);
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.textRight(20,HEIGHT+1,"TEST");
-            StdDraw.show();*/
-            //StdDraw.mouseX()
+
         }
         else if(input == 'L') {
             //Load saved game if it exists
@@ -44,17 +44,27 @@ public class Game {
         Map m = new Map(WIDTH,HEIGHT,seed);
         ter.initialize(WIDTH, HEIGHT+2);
 
-        TETile[][] world = m.generate();
+        world = m.generate();
+        playerX = m.playerX;
+        playerY = m.playerY;
+
         ter.renderFrame(world);
 
         Font smallFont = new Font("Monaco", Font.BOLD, 15);
         StdDraw.setFont(smallFont);
 
-        while(true){
+        double initialX = 0;
+        double initialY = 0;
+        double mouseX;
+        double mouseY;
 
-            if((StdDraw.mouseX() < WIDTH && StdDraw.mouseY() < HEIGHT)) {
+        while(!gameOver){
+            mouseX = StdDraw.mouseX();
+            mouseY = StdDraw.mouseY();
+            if((mouseX < WIDTH && mouseY < HEIGHT) && (mouseX != initialX || mouseY != initialY)) {
 
                 TETile t = world[(int) StdDraw.mouseX()][(int) StdDraw.mouseY()];
+
                 StdDraw.pause(50);
                 ter.renderFrame(world);
 
@@ -62,12 +72,49 @@ public class Game {
                 StdDraw.textRight(20, HEIGHT + 1, t.description());
 
                 StdDraw.show();
-
+                initialX = mouseX;
+                initialY = mouseY;
+            }
+            if(StdDraw.hasNextKeyTyped()){
+                parseInput(StdDraw.nextKeyTyped());
             }
         }
     }
 
-    private void draw(int x, int y, String s){
+    private void parseInput(char input){
+        if(input == 'w'){
+            if(!(world[playerX][playerY+1].equals(Tileset.WALL))){
+                world[playerX][playerY+1] = Tileset.PLAYER;
+                world[playerX][playerY] = Tileset.FLOOR;
+                playerY ++;
+            }
+        }
+        else if(input == 'a'){
+            if(!(world[playerX-1][playerY].equals(Tileset.WALL))){
+                world[playerX-1][playerY] = Tileset.PLAYER;
+                world[playerX][playerY] = Tileset.FLOOR;
+                playerX --;
+            }
+        }
+        else if(input == 's'){
+            if(!(world[playerX][playerY-1].equals(Tileset.WALL))){
+                world[playerX][playerY-1] = Tileset.PLAYER;
+                world[playerX][playerY] = Tileset.FLOOR;
+                playerY --;
+            }
+        }
+        else if(input == 'd'){
+            if(!(world[playerX+1][playerY].equals(Tileset.WALL))){
+                world[playerX+1][playerY] = Tileset.PLAYER;
+                world[playerX][playerY] = Tileset.FLOOR;
+                playerX ++;
+            }
+        }
+        ter.renderFrame(world);
+        StdDraw.show();
+    }
+
+    private void drawMenu(int x, int y, String s){
         StdDraw.clear(Color.BLACK);
         Font titleFont = new Font("Monaco", Font.BOLD, 30);
         Font smallFont = new Font("Monaco", Font.BOLD, 20);
@@ -86,8 +133,8 @@ public class Game {
         StdDraw.show();
     }
 
-    private void draw(){
-        draw(0,0,"");
+    private void drawMenu(){
+        drawMenu(0,0,"");
     }
 
     private char readMenuInput(){
@@ -95,10 +142,10 @@ public class Game {
             if (StdDraw.hasNextKeyTyped()) {
                 char input = StdDraw.nextKeyTyped();
                 if (Character.toUpperCase(input) == 'N') {
-                    draw(MIDWIDTH, MIDHEIGHT - 10, "Enter Seed: ");
+                    drawMenu(MIDWIDTH, MIDHEIGHT - 10, "Enter Seed: ");
                     return 'N';
                 } else if (Character.toUpperCase(input) == 'L') {
-                    draw(MIDWIDTH, MIDHEIGHT - 10, "Load ");
+                    drawMenu(MIDWIDTH, MIDHEIGHT - 10, "Load ");
                     return 'L';
                 } else if (Character.toUpperCase(input) == 'Q') {
                     System.exit(0);
@@ -115,7 +162,7 @@ public class Game {
                 c = StdDraw.nextKeyTyped();
                 if(Character.isDigit(c)){
                     sb.append(c);
-                    draw(MIDWIDTH, MIDHEIGHT - 10, "Enter Seed: " + sb);
+                    drawMenu(MIDWIDTH, MIDHEIGHT - 10, "Enter Seed: " + sb);
                 }
                 else if(Character.toUpperCase(c) == 'S' && sb.length() > 0){
                     break;
