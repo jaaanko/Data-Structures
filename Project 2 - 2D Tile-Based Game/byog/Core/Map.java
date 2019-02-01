@@ -16,11 +16,13 @@ class Map {
     int playerX;
     int playerY;
 
-    Map(int width, int height, long seed){
+    Map(int width, int height, long seed, int pX, int pY){
         this.width = width;
         this.height = height;
         world = new TETile[width][height];
         this.seed = seed;
+        playerX = pX;
+        playerY = pY;
         rand = new Random(seed);
     }
 
@@ -71,11 +73,17 @@ class Map {
             rooms.get(i).connectTo(rooms.get(i+1));
         }
     }
-    //Spawns the player in a random room
+    /*Spawns the player in a random room.
+        If the player xy positions passed to the constructor are negative, generate
+        random positions for the player, since a new game is being started.
+        Otherwise, spawn the player in the given non-negative positions.
+     */
     private void spawnPlayer(){
-        Room r = rooms.get(rand.nextInt(rooms.size()));
-        playerX = rand.nextInt((r.x + (r.width-1)) - (r.x+1)) + (r.x+1);
-        playerY = rand.nextInt(r.y - (r.y - (r.height-2))) + (r.y - (r.height-2));
+        if(playerX < 0) {
+            Room r = rooms.get(rand.nextInt(rooms.size()));
+            playerX = rand.nextInt((r.x + (r.width - 1)) - (r.x + 1)) + (r.x + 1);
+            playerY = rand.nextInt(r.y - (r.y - (r.height - 2))) + (r.y - (r.height - 2));
+        }
         world[playerX][playerY] = Tileset.PLAYER;
     }
 }

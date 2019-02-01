@@ -3,9 +3,12 @@ package byog.Core;
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
+
+import edu.princeton.cs.introcs.In;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
+import java.io.*;
 
 public class Game {
     TERenderer ter = new TERenderer();
@@ -17,31 +20,52 @@ public class Game {
     boolean gameOver;
     int playerX;
     int playerY;
-
+    String saveFile = "byog/Core/Save.txt";
+    long seed;
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
      */
     public void playWithKeyboard() {
+        //Add 2 to height for HUD space
         StdDraw.setCanvasSize(WIDTH*16, (HEIGHT+2)*16);
         StdDraw.setXscale(0, WIDTH);
         StdDraw.setYscale(0, HEIGHT+2);
 
         drawMenu();
         char input = readMenuInput();
+
         if(input == 'N'){
             //Get seed and start game
-            startGame(getSeed());
-
+            seed = getSeedInput();
+            startGame(seed);
         }
         else if(input == 'L') {
-            //Load saved game if it exists
+            //Load saved game by reading the saved seed and player position from a text file
+            try {
+                File f = new File(saveFile);
+                System.out.println(f.getAbsolutePath());
+                FileReader r = new FileReader(f);
+                BufferedReader b = new BufferedReader(r);
+                seed = Long.parseLong(b.readLine());
+                playerX = Integer.parseInt(b.readLine());
+                playerY = Integer.parseInt(b.readLine());
+                b.close();
+
+                startGame(seed,playerX,playerY);
+            }
+            catch (IOException e){
+                System.err.println(e.getMessage());
+            }
         }
-
     }
-
-    private void startGame(int seed){
-        Map m = new Map(WIDTH,HEIGHT,seed);
+    //This method is called when you want to start a new game
+    private void startGame(long seed){
+        startGame(seed,-1,-1);
+    }
+    //This method is called when you want to load an existing save
+    private void startGame(long seed, int pX, int pY){
+        Map m = new Map(WIDTH,HEIGHT,seed,pX,pY);
         ter.initialize(WIDTH, HEIGHT+2);
 
         world = m.generate();
@@ -55,15 +79,15 @@ public class Game {
 
         double initialX = 0;
         double initialY = 0;
-        double mouseX;
-        double mouseY;
+        double mousePosX;
+        double mousePosY;
 
         while(!gameOver){
-            mouseX = StdDraw.mouseX();
-            mouseY = StdDraw.mouseY();
-            if((mouseX < WIDTH && mouseY < HEIGHT) && (mouseX != initialX || mouseY != initialY)) {
+            mousePosX = StdDraw.mouseX();
+            mousePosY = StdDraw.mouseY();
+            if((mousePosX < WIDTH && mousePosY < HEIGHT) && (mousePosX != initialX || mousePosY != initialY)) {
 
-                TETile t = world[(int) StdDraw.mouseX()][(int) StdDraw.mouseY()];
+                TETile t = world[(int)mousePosX][(int)mousePosY];
 
                 StdDraw.pause(50);
                 ter.renderFrame(world);
@@ -72,8 +96,9 @@ public class Game {
                 StdDraw.textRight(20, HEIGHT + 1, t.description());
 
                 StdDraw.show();
-                initialX = mouseX;
-                initialY = mouseY;
+
+                initialX = mousePosX;
+                initialY = mousePosY;
             }
             if(StdDraw.hasNextKeyTyped()){
                 parseInput(StdDraw.nextKeyTyped());
@@ -110,7 +135,45 @@ public class Game {
                 playerX ++;
             }
         }
+        else if(input == ':'){
+            while(true) {
+                if (StdDraw.hasNextKeyTyped()) {
+                    if (Character.toUpperCase(StdDraw.nextKeyTyped()) == 'Q') {
+                        try {
+                            File file = new File(saveFile);
+                            FileWriter fw = new FileWriter(file, false);
+                            BufferedWriter bw = new BufferedWriter(fw);
+
+                            bw.write(Long.toString(seed));
+                            bw.newLine();
+                            bw.write(Integer.toString(playerX));
+                            bw.newLine();
+                            bw.write(Integer.toString(playerY));
+                            bw.close();
+
+                            System.exit(0);
+                        }
+                        catch(IOException e){
+                            System.err.println(e.getMessage());
+                        }
+                    }
+                    else{
+                        break;
+                    }
+                }
+            }
+        }
         ter.renderFrame(world);
+
+        int mousePosX = (int)StdDraw.mouseX();
+        int mousePosY = (int)StdDraw.mouseY();
+        TETile t;
+        if(mousePosX < WIDTH && mousePosY < HEIGHT) {
+            t = world[mousePosX][mousePosY];
+
+            StdDraw.setPenColor(StdDraw.WHITE);
+            StdDraw.textRight(20, HEIGHT + 1, t.description());
+        }
         StdDraw.show();
     }
 
@@ -138,23 +201,28 @@ public class Game {
     }
 
     private char readMenuInput(){
+        In in = new In(saveFile);
+
         while(true) {
             if (StdDraw.hasNextKeyTyped()) {
                 char input = StdDraw.nextKeyTyped();
                 if (Character.toUpperCase(input) == 'N') {
                     drawMenu(MIDWIDTH, MIDHEIGHT - 10, "Enter Seed: ");
                     return 'N';
-                } else if (Character.toUpperCase(input) == 'L') {
-                    drawMenu(MIDWIDTH, MIDHEIGHT - 10, "Load ");
+                }
+                else if (Character.toUpperCase(input) == 'L' && !in.isEmpty()) {
+                    drawMenu(MIDWIDTH, MIDHEIGHT - 10, "Loading...");
+                    StdDraw.pause(400);
                     return 'L';
-                } else if (Character.toUpperCase(input) == 'Q') {
+                }
+                else if (Character.toUpperCase(input) == 'Q') {
                     System.exit(0);
                 }
             }
         }
     }
 
-    private int getSeed(){
+    private int getSeedInput(){
         char c;
         StringBuilder sb = new StringBuilder();
         while(true){
@@ -190,7 +258,7 @@ public class Game {
             if(Character.isDigit(input.charAt(1))){
                 if(getStopIndex(input) > 0) {
                     int seed = Integer.parseInt(input.substring(1, getStopIndex(input)));
-                    Map m = new Map(WIDTH, HEIGHT, seed);
+                    Map m = new Map(WIDTH, HEIGHT, seed,-1,-1);
                     return m.generate();
                 }
             }
