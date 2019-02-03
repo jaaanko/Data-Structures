@@ -10,18 +10,19 @@ import edu.princeton.cs.introcs.StdDraw;
 import java.awt.*;
 import java.io.*;
 
-public class Game {
-    TERenderer ter = new TERenderer();
-    static final int WIDTH = 70;
-    static final int HEIGHT = 40;
-    static final int MIDHEIGHT = HEIGHT/2;
-    static final int MIDWIDTH = WIDTH/2;
-    TETile[][] world;
-    boolean gameOver;
-    int playerX;
-    int playerY;
-    String saveFile = "byog/Core/Save.txt";
-    long seed;
+class Game {
+    private TERenderer ter = new TERenderer();
+    private static final int WIDTH = 70;
+    private static final int HEIGHT = 40;
+    private static final int MIDHEIGHT = HEIGHT/2;
+    private static final int MIDWIDTH = WIDTH/2;
+    private TETile[][] world;
+    private boolean endGame;
+    private int playerX;
+    private int playerY;
+    private String saveFile = "byog/Core/Save.txt";
+    private long seed;
+    private String inputString = "";
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
@@ -34,32 +35,40 @@ public class Game {
 
         drawMenu();
         char input = readMenuInput();
+        inputString += input;
 
         if(input == 'N'){
             //Get seed and start game
             seed = getSeedInput();
+            inputString = inputString + Long.toString(seed) + 'S';
             startGame(seed);
+
+            System.exit(0);
         }
         else if(input == 'L') {
             //Load saved game by reading the saved seed and player position from a text file
             try {
                 File f = new File(saveFile);
-                System.out.println(f.getAbsolutePath());
                 FileReader r = new FileReader(f);
                 BufferedReader b = new BufferedReader(r);
+
                 seed = Long.parseLong(b.readLine());
                 playerX = Integer.parseInt(b.readLine());
                 playerY = Integer.parseInt(b.readLine());
                 b.close();
 
                 startGame(seed,playerX,playerY);
+
+                System.exit(0);
             }
             catch (IOException e){
                 System.err.println(e.getMessage());
             }
         }
     }
-    //This method is called when you want to start a new game
+    /**This method is called when you want to start a new game.
+        -1 is just an arbitrary default value.
+     */
     private void startGame(long seed){
         startGame(seed,-1,-1);
     }
@@ -82,7 +91,7 @@ public class Game {
         double mousePosX;
         double mousePosY;
 
-        while(!gameOver){
+        while(!endGame){
             mousePosX = StdDraw.mouseX();
             mousePosY = StdDraw.mouseY();
             if((mousePosX < WIDTH && mousePosY < HEIGHT) && (mousePosX != initialX || mousePosY != initialY)) {
@@ -102,79 +111,75 @@ public class Game {
             }
             if(StdDraw.hasNextKeyTyped()){
                 parseInput(StdDraw.nextKeyTyped());
+                ter.renderFrame(world);
+
+                mousePosX = StdDraw.mouseX();
+                mousePosY = StdDraw.mouseY();
+                TETile t;
+                if(mousePosX < WIDTH && mousePosY < HEIGHT) {
+                    t = world[(int)mousePosX][(int)mousePosY];
+
+                    StdDraw.setPenColor(StdDraw.WHITE);
+                    StdDraw.textRight(20, HEIGHT + 1, t.description());
+                }
+                StdDraw.show();
             }
         }
     }
 
     private void parseInput(char input){
-        if(input == 'w'){
+        input = Character.toUpperCase(input);
+        inputString += input;
+
+        if(input == 'W'){
             if(!(world[playerX][playerY+1].equals(Tileset.WALL))){
                 world[playerX][playerY+1] = Tileset.PLAYER;
                 world[playerX][playerY] = Tileset.FLOOR;
                 playerY ++;
             }
         }
-        else if(input == 'a'){
+        else if(input == 'A'){
             if(!(world[playerX-1][playerY].equals(Tileset.WALL))){
                 world[playerX-1][playerY] = Tileset.PLAYER;
                 world[playerX][playerY] = Tileset.FLOOR;
                 playerX --;
             }
         }
-        else if(input == 's'){
+        else if(input == 'S'){
             if(!(world[playerX][playerY-1].equals(Tileset.WALL))){
                 world[playerX][playerY-1] = Tileset.PLAYER;
                 world[playerX][playerY] = Tileset.FLOOR;
                 playerY --;
             }
         }
-        else if(input == 'd'){
+        else if(input == 'D'){
             if(!(world[playerX+1][playerY].equals(Tileset.WALL))){
                 world[playerX+1][playerY] = Tileset.PLAYER;
                 world[playerX][playerY] = Tileset.FLOOR;
                 playerX ++;
             }
         }
-        else if(input == ':'){
-            while(true) {
-                if (StdDraw.hasNextKeyTyped()) {
-                    if (Character.toUpperCase(StdDraw.nextKeyTyped()) == 'Q') {
-                        try {
-                            File file = new File(saveFile);
-                            FileWriter fw = new FileWriter(file, false);
-                            BufferedWriter bw = new BufferedWriter(fw);
+        else if(input == 'Q'){
+            if(inputString.charAt(inputString.length()-2) == ':'){
+                try {
+                    File file = new File(saveFile);
+                    FileWriter fw = new FileWriter(file, false);
+                    BufferedWriter bw = new BufferedWriter(fw);
 
-                            bw.write(Long.toString(seed));
-                            bw.newLine();
-                            bw.write(Integer.toString(playerX));
-                            bw.newLine();
-                            bw.write(Integer.toString(playerY));
-                            bw.close();
+                    bw.write(Long.toString(seed));
+                    bw.newLine();
+                    bw.write(Integer.toString(playerX));
+                    bw.newLine();
+                    bw.write(Integer.toString(playerY));
+                    bw.close();
 
-                            System.exit(0);
-                        }
-                        catch(IOException e){
-                            System.err.println(e.getMessage());
-                        }
-                    }
-                    else{
-                        break;
-                    }
+                    endGame = true;
+                }
+                catch(IOException e){
+                    System.err.println(e.getMessage());
                 }
             }
         }
-        ter.renderFrame(world);
-
-        int mousePosX = (int)StdDraw.mouseX();
-        int mousePosY = (int)StdDraw.mouseY();
-        TETile t;
-        if(mousePosX < WIDTH && mousePosY < HEIGHT) {
-            t = world[mousePosX][mousePosY];
-
-            StdDraw.setPenColor(StdDraw.WHITE);
-            StdDraw.textRight(20, HEIGHT + 1, t.description());
-        }
-        StdDraw.show();
     }
 
     private void drawMenu(int x, int y, String s){
@@ -202,7 +207,6 @@ public class Game {
 
     private char readMenuInput(){
         In in = new In(saveFile);
-
         while(true) {
             if (StdDraw.hasNextKeyTyped()) {
                 char input = StdDraw.nextKeyTyped();
@@ -222,7 +226,7 @@ public class Game {
         }
     }
 
-    private int getSeedInput(){
+    private long getSeedInput(){
         char c;
         StringBuilder sb = new StringBuilder();
         while(true){
@@ -237,8 +241,7 @@ public class Game {
                 }
             }
         }
-        System.out.println(sb);
-        return Integer.parseInt(sb.toString());
+        return Long.parseLong(sb.toString());
     }
 
     /**
@@ -256,18 +259,46 @@ public class Game {
     public TETile[][] playWithInputString(String input) {
         if(Character.toUpperCase(input.charAt(0)) == 'N'){
             if(Character.isDigit(input.charAt(1))){
-                if(getStopIndex(input) > 0) {
-                    int seed = Integer.parseInt(input.substring(1, getStopIndex(input)));
+                int stopIndex = getStopIndex(input);
+                if(stopIndex > 0) {
+                    seed = Integer.parseInt(input.substring(1, stopIndex));
                     Map m = new Map(WIDTH, HEIGHT, seed,-1,-1);
-                    return m.generate();
+                    world = m.generate();
+                    playerX = m.playerX;
+                    playerY = m.playerY;
+
+                    for(int i=stopIndex+1; i< input.length(); i++){
+                        parseInput(input.charAt(i));
+                    }
+                    return world;
                 }
             }
         }
         else if(Character.toUpperCase(input.charAt(0)) == 'L'){
-            System.out.println("LOAD");
+            try {
+                File f = new File(saveFile);
+                FileReader r = new FileReader(f);
+                BufferedReader b = new BufferedReader(r);
+
+                seed = Long.parseLong(b.readLine());
+                Map m = new Map(WIDTH, HEIGHT, seed,Integer.parseInt(b.readLine()),Integer.parseInt(b.readLine()));
+                b.close();
+
+                world = m.generate();
+
+                playerX = m.playerX;
+                playerY = m.playerY;
+
+                for(int i=1; i< input.length(); i++){
+                    parseInput(input.charAt(i));
+                }
+                return world;
+            }
+            catch (IOException e){
+                System.err.println(e.getMessage());
+            }
         }
         else if(Character.toUpperCase(input.charAt(0)) == 'Q'){
-            System.out.println("QUIT");
             System.exit(0);
         }
         return null;
