@@ -30,6 +30,9 @@ class Map {
         fill();
         createRooms(rand.nextInt((MAXROOMS - MINROOMS) + 1) + MINROOMS);
         spawnPlayer();
+        spawnPortal();
+        spawnExit();
+
         return world;
     }
 
@@ -81,9 +84,41 @@ class Map {
     private void spawnPlayer(){
         if(playerX < 0) {
             Room r = rooms.get(rand.nextInt(rooms.size()));
-            playerX = rand.nextInt((r.x + (r.width - 1)) - (r.x + 1)) + (r.x + 1);
-            playerY = rand.nextInt(r.y - (r.y - (r.height - 2))) + (r.y - (r.height - 2));
+            while(true) {
+                playerX = rand.nextInt((r.x + (r.width - 1)) - (r.x + 1)) + (r.x + 1);
+                playerY = rand.nextInt(r.y - (r.y - (r.height - 2))) + (r.y - (r.height - 2));
+                if (world[playerX][playerY] != Tileset.MOUNTAIN && world[playerX][playerY] != Tileset.FLOWER) {
+                    break;
+                }
+            }
         }
         world[playerX][playerY] = Tileset.PLAYER;
     }
+
+    private void spawnPortal(){
+        Random rand = new Random(seed);
+        Room r = rooms.get(rand.nextInt(rooms.size()));
+        while(true) {
+            int portalX = rand.nextInt((r.x + (r.width - 1)) - (r.x + 1)) + (r.x + 1);
+            int portalY = rand.nextInt(r.y - (r.y - (r.height - 2))) + (r.y - (r.height - 2));
+            if (world[portalX][portalY] != Tileset.PLAYER && world[portalX][portalY] != Tileset.FLOWER) {
+                world[portalX][portalY] = Tileset.MOUNTAIN;
+                break;
+            }
+        }
+    }
+
+    private void spawnExit(){
+        Random rand = new Random(seed);
+        Room r = rooms.get(rand.nextInt(rooms.size()));
+        while(true) {
+            int exitX = rand.nextInt((r.x + (r.width - 1)) - (r.x + 1)) + (r.x + 1);
+            int exitY = rand.nextInt(r.y - (r.y - (r.height - 2))) + (r.y - (r.height - 2));
+            if (world[exitX][exitY] != Tileset.PLAYER && world[exitX][exitY] != Tileset.MOUNTAIN) {
+                world[exitX][exitY] = Tileset.FLOWER;
+                break;
+            }
+        }
+    }
+
 }

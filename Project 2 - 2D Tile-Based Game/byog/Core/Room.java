@@ -141,13 +141,10 @@ class Room {
         int xPos1 = rand.nextInt(((x+width-1)-(x+1)))+(x+1);
         int xPos2 = rand.nextInt(((r.x+r.width-1)-(r.x+1)))+(r.x+1);
 
-        if(x+width < r.x || r.x+r.width < x){
+        if(x+(width) < r.x || r.x+(r.width) < x){
             //If room 1 is to the left of room 2
             if(x-r.x < 0){
-                if((r.x) - (x+width+1) <  0){
-                    drawHorizontalHallway(r.x,yPos2,3,"left");
-                }
-                else {
+                if((r.x) - (x+width+1) >=  0){
                     end = rand.nextInt((r.x) - (x + (width - 1))) + (x + (width - 1));
                     length1 = end - (x + width)+1;
                     length2 = end - r.x;
@@ -165,10 +162,7 @@ class Room {
             }
             //If room 2 is to the left of room 1
             else{
-                if((x)-(r.x+r.width+1) < 0){
-                    drawHorizontalHallway(x,yPos1,3,"left");
-                }
-                else{
+                if((x)-(r.x+r.width+1) >= 0){
                     end = rand.nextInt((x)-(r.x+r.width-1)) + (r.x+r.width-1);
                     length1 = end-(r.x+r.width)+1;
                     length2 = end - x;
@@ -189,10 +183,7 @@ class Room {
         else {
             //If room 1 is below room 2
             if (y - r.y < 0) {
-                if((r.y-r.height-1) - (y) < 0){
-                    drawVerticalHallway(xPos2,r.y,3,"up");
-                }
-                else{
+                if((r.y-r.height-1) - (y) >= 0){
                     end = rand.nextInt((r.y- (r.height - 1)) - (y)) + (y);
                     length1 = end - y;
                     length2 = (r.y - (r.height -1)) - end;
@@ -210,10 +201,7 @@ class Room {
             }
             //If room 2 is below room 1
             else {
-                if((y-height-1)-(r.y) < 0){
-                    drawVerticalHallway(xPos1,y,3,"up");
-                }
-                else{
+                if((y-height-1)-(r.y) >= 0){
                     end = rand.nextInt((y-(height-1))-(r.y)) + (r.y);
                     length1 = end - r.y;
                     length2 = (y-(height-1))-end;

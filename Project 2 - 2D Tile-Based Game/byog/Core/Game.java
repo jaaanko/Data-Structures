@@ -23,15 +23,21 @@ class Game {
     private String saveFile = "byog/Core/Save.txt";
     private long seed;
     private String inputString = "";
+    private int maxHP = 10;
+    private int currentHP = 10;
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
      */
     public void playWithKeyboard() {
         //Add 2 to height for HUD space
+
         StdDraw.setCanvasSize(WIDTH*16, (HEIGHT+2)*16);
         StdDraw.setXscale(0, WIDTH);
         StdDraw.setYscale(0, HEIGHT+2);
+        StdDraw.clear(Color.BLACK);
+
+        StdDraw.enableDoubleBuffering();
 
         drawMenu();
         char input = readMenuInput();
@@ -41,9 +47,8 @@ class Game {
             //Get seed and start game
             seed = getSeedInput();
             inputString = inputString + Long.toString(seed) + 'S';
+            System.out.println(seed);
             startGame(seed);
-
-            System.exit(0);
         }
         else if(input == 'L') {
             //Load saved game by reading the saved seed and player position from a text file
@@ -58,13 +63,13 @@ class Game {
                 b.close();
 
                 startGame(seed,playerX,playerY);
-
-                System.exit(0);
             }
             catch (IOException e){
                 System.err.println(e.getMessage());
             }
         }
+        System.out.println(inputString);
+        System.exit(0);
     }
     /**This method is called when you want to start a new game.
         -1 is just an arbitrary default value.
@@ -82,10 +87,12 @@ class Game {
         playerY = m.playerY;
 
         ter.renderFrame(world);
-
+        StdDraw.setPenColor(StdDraw.WHITE);
         Font smallFont = new Font("Monaco", Font.BOLD, 15);
         StdDraw.setFont(smallFont);
 
+        StdDraw.textRight(10, HEIGHT + 1, "HP: " + Integer.toString(currentHP) + "/" + Integer.toString(maxHP));
+        StdDraw.show();
         double initialX = 0;
         double initialY = 0;
         double mousePosX;
@@ -95,15 +102,14 @@ class Game {
             mousePosX = StdDraw.mouseX();
             mousePosY = StdDraw.mouseY();
             if((mousePosX < WIDTH && mousePosY < HEIGHT) && (mousePosX != initialX || mousePosY != initialY)) {
-
                 TETile t = world[(int)mousePosX][(int)mousePosY];
 
                 StdDraw.pause(50);
+
                 ter.renderFrame(world);
 
                 StdDraw.setPenColor(StdDraw.WHITE);
-                StdDraw.textRight(20, HEIGHT + 1, t.description());
-
+                updateHUD(t.description());
                 StdDraw.show();
 
                 initialX = mousePosX;
@@ -111,19 +117,22 @@ class Game {
             }
             if(StdDraw.hasNextKeyTyped()){
                 parseInput(StdDraw.nextKeyTyped());
+                StdDraw.clear(Color.BLACK);
                 ter.renderFrame(world);
 
                 mousePosX = StdDraw.mouseX();
                 mousePosY = StdDraw.mouseY();
                 TETile t;
+
                 if(mousePosX < WIDTH && mousePosY < HEIGHT) {
                     t = world[(int)mousePosX][(int)mousePosY];
 
                     StdDraw.setPenColor(StdDraw.WHITE);
-                    StdDraw.textRight(20, HEIGHT + 1, t.description());
+                    updateHUD(t.description());
                 }
                 StdDraw.show();
             }
+
         }
     }
 
@@ -163,6 +172,7 @@ class Game {
             if(inputString.charAt(inputString.length()-2) == ':'){
                 try {
                     File file = new File(saveFile);
+
                     FileWriter fw = new FileWriter(file, false);
                     BufferedWriter bw = new BufferedWriter(fw);
 
@@ -180,6 +190,11 @@ class Game {
                 }
             }
         }
+    }
+
+    private void updateHUD(String s){
+        StdDraw.textRight(20, HEIGHT + 1, s);
+        StdDraw.textRight(10, HEIGHT + 1, "HP: " + Integer.toString(currentHP) + "/" + Integer.toString(maxHP));
     }
 
     private void drawMenu(int x, int y, String s){
