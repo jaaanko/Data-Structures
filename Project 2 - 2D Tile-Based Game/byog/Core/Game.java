@@ -9,6 +9,7 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
 import java.io.*;
+import java.util.Random;
 
 class Game {
     private TERenderer ter = new TERenderer();
@@ -25,7 +26,8 @@ class Game {
     private String inputString = "";
     private int maxHP = 10;
     private int currentHP = 10;
-
+    private int stepCount = 0;
+    private int hungerRate = 4;
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
      */
@@ -91,7 +93,8 @@ class Game {
         Font smallFont = new Font("Monaco", Font.BOLD, 15);
         StdDraw.setFont(smallFont);
 
-        StdDraw.textRight(10, HEIGHT + 1, "HP: " + Integer.toString(currentHP) + "/" + Integer.toString(maxHP));
+        StdDraw.text(WIDTH-12, HEIGHT + 1, "Every "+ hungerRate +" steps, you will get hungrier. Good luck!");
+        StdDraw.text(10, HEIGHT + 1, "Hunger Points:  " + Integer.toString(currentHP) + "/" + Integer.toString(maxHP));
         StdDraw.show();
         double initialX = 0;
         double initialY = 0;
@@ -142,30 +145,82 @@ class Game {
 
         if(input == 'W'){
             if(!(world[playerX][playerY+1].equals(Tileset.WALL))){
-                world[playerX][playerY+1] = Tileset.PLAYER;
-                world[playerX][playerY] = Tileset.FLOOR;
-                playerY ++;
+                if(world[playerX][playerY+1].equals(Tileset.GRASS)){
+                    if(currentHP < maxHP){
+                        currentHP++;
+                    }
+                }
+                if(world[playerX][playerY+1].equals(Tileset.MOUNTAIN)) {
+                    teleportPlayer();
+                }
+                else{
+                    world[playerX][playerY + 1] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    playerY ++;
+                }
+            }
+            else{
+                return;
             }
         }
         else if(input == 'A'){
             if(!(world[playerX-1][playerY].equals(Tileset.WALL))){
-                world[playerX-1][playerY] = Tileset.PLAYER;
-                world[playerX][playerY] = Tileset.FLOOR;
-                playerX --;
+                if(world[playerX-1][playerY].equals(Tileset.GRASS)){
+                    if(currentHP < maxHP){
+                        currentHP++;
+                    }
+                }
+                if(world[playerX-1][playerY].equals(Tileset.MOUNTAIN)) {
+                    teleportPlayer();
+                }
+                else {
+                    world[playerX - 1][playerY] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    playerX--;
+                }
+            }
+            else{
+                return;
             }
         }
         else if(input == 'S'){
             if(!(world[playerX][playerY-1].equals(Tileset.WALL))){
-                world[playerX][playerY-1] = Tileset.PLAYER;
-                world[playerX][playerY] = Tileset.FLOOR;
-                playerY --;
+                if(world[playerX][playerY-1].equals(Tileset.GRASS)){
+                    if(currentHP < maxHP){
+                        currentHP++;
+                    }
+                }
+                if(world[playerX][playerY-1].equals(Tileset.MOUNTAIN)) {
+                    teleportPlayer();
+                }
+                else {
+                    world[playerX][playerY - 1] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    playerY--;
+                }
+            }
+            else{
+                return;
             }
         }
         else if(input == 'D'){
             if(!(world[playerX+1][playerY].equals(Tileset.WALL))){
-                world[playerX+1][playerY] = Tileset.PLAYER;
-                world[playerX][playerY] = Tileset.FLOOR;
-                playerX ++;
+                if(world[playerX+1][playerY].equals(Tileset.GRASS)){
+                    if(currentHP < maxHP){
+                        currentHP++;
+                    }
+                }
+                if(world[playerX+1][playerY].equals(Tileset.MOUNTAIN)) {
+                    teleportPlayer();
+                }
+                else {
+                    world[playerX + 1][playerY] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    playerX++;
+                }
+            }
+            else{
+                return;
             }
         }
         else if(input == 'Q'){
@@ -182,19 +237,50 @@ class Game {
                     bw.newLine();
                     bw.write(Integer.toString(playerY));
                     bw.close();
-
                     endGame = true;
+                    return;
                 }
                 catch(IOException e){
                     System.err.println(e.getMessage());
                 }
             }
         }
+        else{
+            return;
+        }
+        //Reduce hunger points by 1 for every 4 steps taken.
+        stepCount++;
+        if(stepCount % hungerRate == 0){
+            currentHP--;
+        }
+    }
+
+    private void teleportPlayer(){
+        world[playerX][playerY] = Tileset.FLOOR;
+        Random rand = new Random();
+        int x;
+        int y;
+        while(true) {
+            x = rand.nextInt(WIDTH);
+            y = rand.nextInt(HEIGHT);
+            if (world[x][y] != Tileset.WALL && world[x][y] != Tileset.NOTHING && world[x][y] != Tileset.MOUNTAIN) {
+                if(world[x][y] == Tileset.GRASS){
+                    if(currentHP < maxHP){
+                        currentHP++;
+                    }
+                }
+                world[x][y] = Tileset.PLAYER;
+                playerX = x;
+                playerY = y;
+                break;
+            }
+        }
     }
 
     private void updateHUD(String s){
-        StdDraw.textRight(20, HEIGHT + 1, s);
-        StdDraw.textRight(10, HEIGHT + 1, "HP: " + Integer.toString(currentHP) + "/" + Integer.toString(maxHP));
+        StdDraw.text(WIDTH-12, HEIGHT + 1, "Every "+ hungerRate +" steps, you will get hungrier. Good luck!");
+        StdDraw.text(MIDWIDTH, HEIGHT + 1, s);
+        StdDraw.text(10, HEIGHT + 1, "Hunger Points:  " + Integer.toString(currentHP) + "/" + Integer.toString(maxHP));
     }
 
     private void drawMenu(int x, int y, String s){
@@ -204,9 +290,10 @@ class Game {
 
         StdDraw.setFont(titleFont);
         StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.text(MIDWIDTH,MIDHEIGHT+10,"GAME (Temporary Name)");
+        StdDraw.text(MIDWIDTH,MIDHEIGHT+10,"RNGame");
 
         StdDraw.setFont(smallFont);
+        StdDraw.text(MIDWIDTH,MIDHEIGHT+5,"~Reach the flower before you starve~");
         StdDraw.text(MIDWIDTH,MIDHEIGHT,"New Game (N)");
         StdDraw.text(MIDWIDTH,MIDHEIGHT-3,"Load Game(L)");
         StdDraw.text(MIDWIDTH,MIDHEIGHT-6,"Quit (Q)");

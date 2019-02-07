@@ -29,6 +29,7 @@ class Map {
     TETile[][] generate(){
         fill();
         createRooms(rand.nextInt((MAXROOMS - MINROOMS) + 1) + MINROOMS);
+        spawnFood(15);
         spawnPlayer();
         spawnPortal();
         spawnExit();
@@ -87,7 +88,7 @@ class Map {
             while(true) {
                 playerX = rand.nextInt((r.x + (r.width - 1)) - (r.x + 1)) + (r.x + 1);
                 playerY = rand.nextInt(r.y - (r.y - (r.height - 2))) + (r.y - (r.height - 2));
-                if (world[playerX][playerY] != Tileset.MOUNTAIN && world[playerX][playerY] != Tileset.FLOWER) {
+                if (world[playerX][playerY] != Tileset.MOUNTAIN && world[playerX][playerY] != Tileset.FLOWER && world[playerX][playerY] != Tileset.GRASS) {
                     break;
                 }
             }
@@ -96,12 +97,12 @@ class Map {
     }
 
     private void spawnPortal(){
-        Random rand = new Random(seed);
+        Random rand = new Random(seed%5);
         Room r = rooms.get(rand.nextInt(rooms.size()));
         while(true) {
             int portalX = rand.nextInt((r.x + (r.width - 1)) - (r.x + 1)) + (r.x + 1);
             int portalY = rand.nextInt(r.y - (r.y - (r.height - 2))) + (r.y - (r.height - 2));
-            if (world[portalX][portalY] != Tileset.PLAYER && world[portalX][portalY] != Tileset.FLOWER) {
+            if (world[portalX][portalY] != Tileset.PLAYER && world[portalX][portalY] != Tileset.FLOWER && world[portalX][portalY] != Tileset.GRASS) {
                 world[portalX][portalY] = Tileset.MOUNTAIN;
                 break;
             }
@@ -109,14 +110,30 @@ class Map {
     }
 
     private void spawnExit(){
-        Random rand = new Random(seed);
+        Random rand = new Random(seed%3);
         Room r = rooms.get(rand.nextInt(rooms.size()));
         while(true) {
             int exitX = rand.nextInt((r.x + (r.width - 1)) - (r.x + 1)) + (r.x + 1);
             int exitY = rand.nextInt(r.y - (r.y - (r.height - 2))) + (r.y - (r.height - 2));
-            if (world[exitX][exitY] != Tileset.PLAYER && world[exitX][exitY] != Tileset.MOUNTAIN) {
+            if (world[exitX][exitY] != Tileset.PLAYER && world[exitX][exitY] != Tileset.MOUNTAIN && world[exitX][exitY] != Tileset.GRASS) {
                 world[exitX][exitY] = Tileset.FLOWER;
                 break;
+            }
+        }
+    }
+
+    private void spawnFood(int n){
+        Random rand = new Random(seed);
+        int x;
+        int y;
+        for(int i=0; i<n; i++){
+            while(true) {
+                x = rand.nextInt(width);
+                y = rand.nextInt(height);
+                if (world[x][y] != Tileset.WALL && world[x][y] != Tileset.NOTHING) {
+                    world[x][y] = Tileset.GRASS;
+                    break;
+                }
             }
         }
     }
