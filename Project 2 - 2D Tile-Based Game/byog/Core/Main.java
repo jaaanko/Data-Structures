@@ -11,15 +11,7 @@ import java.io.IOException;
  */
 public class Main {
     public static void main(String[] args) {
-        try {
-            File file = new File("byog/Core/Save.txt");
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-        }
-        catch (IOException e){
-            System.err.println(e.getMessage());
-        }
+
         if (args.length > 1) {
             System.out.println("Can only have one argument - the input string");
             System.exit(0);

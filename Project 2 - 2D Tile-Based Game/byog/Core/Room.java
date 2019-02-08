@@ -130,7 +130,7 @@ class Room {
         }
     }
     /*Draws a hallway that connects this room to the given room
-    --More comments coming soon--
+
      */
     void connectTo(Room r){
         Random rand = new Random(seed);

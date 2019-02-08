@@ -9,9 +9,10 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Random;
 
-class Game {
+class Game implements Serializable{
     private TERenderer ter = new TERenderer();
     private static final int WIDTH = 70;
     private static final int HEIGHT = 40;
@@ -21,19 +22,20 @@ class Game {
     private boolean endGame;
     private int playerX;
     private int playerY;
-    private String saveFile = "byog/Core/Save.txt";
+    private String worldSaveFile = "byog/Core/WorldState.txt";
     private long seed;
     private String inputString = "";
     private int maxHP = 10;
     private int currentHP = 10;
     private int stepCount = 0;
-    private int hungerRate = 4;
+    private int hungerRate = 5;
+    private int gameResult = 0;
+
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
      */
     public void playWithKeyboard() {
         //Add 2 to height for HUD space
-
         StdDraw.setCanvasSize(WIDTH*16, (HEIGHT+2)*16);
         StdDraw.setXscale(0, WIDTH);
         StdDraw.setYscale(0, HEIGHT+2);
@@ -49,44 +51,78 @@ class Game {
             //Get seed and start game
             seed = getSeedInput();
             inputString = inputString + Long.toString(seed) + 'S';
-            System.out.println(seed);
-            startGame(seed);
+            //System.out.println(seed);
+            initialize(seed);
         }
         else if(input == 'L') {
             //Load saved game by reading the saved seed and player position from a text file
-            try {
-                File f = new File(saveFile);
-                FileReader r = new FileReader(f);
-                BufferedReader b = new BufferedReader(r);
-
-                seed = Long.parseLong(b.readLine());
-                playerX = Integer.parseInt(b.readLine());
-                playerY = Integer.parseInt(b.readLine());
-                b.close();
-
-                startGame(seed,playerX,playerY);
-            }
-            catch (IOException e){
-                System.err.println(e.getMessage());
-            }
+            load();
         }
         System.out.println(inputString);
+        if(gameResult > 0){
+            finishScreen('w');
+        }
+        else if(gameResult < 0){
+            finishScreen('l');
+        }
         System.exit(0);
     }
-    /**This method is called when you want to start a new game.
-        -1 is just an arbitrary default value.
-     */
-    private void startGame(long seed){
-        startGame(seed,-1,-1);
-    }
-    //This method is called when you want to load an existing save
-    private void startGame(long seed, int pX, int pY){
-        Map m = new Map(WIDTH,HEIGHT,seed,pX,pY);
+
+
+    private void initialize(long seed){
+        Map m = new Map(WIDTH,HEIGHT,seed);
         ter.initialize(WIDTH, HEIGHT+2);
 
         world = m.generate();
         playerX = m.playerX;
         playerY = m.playerY;
+
+        startGame(world);
+    }
+
+    private void load(){
+        try {
+            FileInputStream fi = new FileInputStream(new File(worldSaveFile));
+            ObjectInputStream oi = new ObjectInputStream(fi);
+
+            ArrayList<Object> woi = (ArrayList<Object>) oi.readObject();
+
+            Game g = (Game) woi.get(0);
+            world = (TETile[][]) woi.get(1);
+            this.seed = g.seed;
+            this.playerX = g.playerX;
+            this.playerY = g.playerY;
+            this.currentHP = g.currentHP;
+
+            oi.close();
+            fi.close();
+            startGame(world);
+        }
+        catch(IOException e){
+            System.err.println(e.getMessage());
+        }
+        catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void save(){
+        ArrayList<Object> woi = new ArrayList<>();
+        woi.add(this);
+        woi.add(world);
+        try {
+            FileOutputStream f = new FileOutputStream(new File(worldSaveFile));
+            ObjectOutputStream o = new ObjectOutputStream(f);
+            o.writeObject(woi);
+            o.close();
+            f.close();
+        }
+        catch(IOException e){
+            System.err.println(e.getMessage());
+        }
+    }
+    //This method is called when you want to load an existing save
+    private void startGame(TETile[][] world){
 
         ter.renderFrame(world);
         StdDraw.setPenColor(StdDraw.WHITE);
@@ -101,7 +137,7 @@ class Game {
         double mousePosX;
         double mousePosY;
 
-        while(!endGame){
+        while(true){
             mousePosX = StdDraw.mouseX();
             mousePosY = StdDraw.mouseY();
             if((mousePosX < WIDTH && mousePosY < HEIGHT) && (mousePosX != initialX || mousePosY != initialY)) {
@@ -118,8 +154,12 @@ class Game {
                 initialX = mousePosX;
                 initialY = mousePosY;
             }
+
             if(StdDraw.hasNextKeyTyped()){
                 parseInput(StdDraw.nextKeyTyped());
+                if(endGame){
+                    return;
+                }
                 StdDraw.clear(Color.BLACK);
                 ter.renderFrame(world);
 
@@ -129,13 +169,11 @@ class Game {
 
                 if(mousePosX < WIDTH && mousePosY < HEIGHT) {
                     t = world[(int)mousePosX][(int)mousePosY];
-
                     StdDraw.setPenColor(StdDraw.WHITE);
                     updateHUD(t.description());
                 }
                 StdDraw.show();
             }
-
         }
     }
 
@@ -148,15 +186,27 @@ class Game {
                 if(world[playerX][playerY+1].equals(Tileset.GRASS)){
                     if(currentHP < maxHP){
                         currentHP++;
+                        stepCount = 0;
                     }
+                    world[playerX][playerY + 1] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    playerY ++;
                 }
-                if(world[playerX][playerY+1].equals(Tileset.MOUNTAIN)) {
+                else if(world[playerX][playerY+1].equals(Tileset.MOUNTAIN)) {
                     teleportPlayer();
+                }
+                else if(world[playerX][playerY+1].equals(Tileset.FLOWER)) {
+                    world[playerX][playerY + 1] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    gameResult = 1;
+                    endGame = true;
+                    return;
                 }
                 else{
                     world[playerX][playerY + 1] = Tileset.PLAYER;
                     world[playerX][playerY] = Tileset.FLOOR;
                     playerY ++;
+                    stepCount++;
                 }
             }
             else{
@@ -168,15 +218,27 @@ class Game {
                 if(world[playerX-1][playerY].equals(Tileset.GRASS)){
                     if(currentHP < maxHP){
                         currentHP++;
+                        stepCount = 0;
                     }
+                    world[playerX - 1][playerY] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    playerX--;
                 }
-                if(world[playerX-1][playerY].equals(Tileset.MOUNTAIN)) {
+                else if(world[playerX-1][playerY].equals(Tileset.MOUNTAIN)) {
                     teleportPlayer();
+                }
+                else if(world[playerX-1][playerY].equals(Tileset.FLOWER)) {
+                    world[playerX - 1][playerY] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    gameResult = 1;
+                    endGame = true;
+                    return;
                 }
                 else {
                     world[playerX - 1][playerY] = Tileset.PLAYER;
                     world[playerX][playerY] = Tileset.FLOOR;
                     playerX--;
+                    stepCount++;
                 }
             }
             else{
@@ -188,15 +250,27 @@ class Game {
                 if(world[playerX][playerY-1].equals(Tileset.GRASS)){
                     if(currentHP < maxHP){
                         currentHP++;
+                        stepCount = 0;
                     }
+                    world[playerX][playerY - 1] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    playerY--;
                 }
-                if(world[playerX][playerY-1].equals(Tileset.MOUNTAIN)) {
+                else if(world[playerX][playerY-1].equals(Tileset.MOUNTAIN)) {
                     teleportPlayer();
+                }
+                else if(world[playerX][playerY-1].equals(Tileset.FLOWER)) {
+                    world[playerX][playerY - 1] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    gameResult = 1;
+                    endGame = true;
+                    return;
                 }
                 else {
                     world[playerX][playerY - 1] = Tileset.PLAYER;
                     world[playerX][playerY] = Tileset.FLOOR;
                     playerY--;
+                    stepCount++;
                 }
             }
             else{
@@ -208,15 +282,27 @@ class Game {
                 if(world[playerX+1][playerY].equals(Tileset.GRASS)){
                     if(currentHP < maxHP){
                         currentHP++;
+                        stepCount = 0;
                     }
+                    world[playerX + 1][playerY] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    playerX++;
                 }
-                if(world[playerX+1][playerY].equals(Tileset.MOUNTAIN)) {
+                else if(world[playerX+1][playerY].equals(Tileset.MOUNTAIN)) {
                     teleportPlayer();
+                }
+                else if(world[playerX+1][playerY].equals(Tileset.FLOWER)) {
+                    world[playerX + 1][playerY] = Tileset.PLAYER;
+                    world[playerX][playerY] = Tileset.FLOOR;
+                    gameResult = 1;
+                    endGame = true;
+                    return;
                 }
                 else {
                     world[playerX + 1][playerY] = Tileset.PLAYER;
                     world[playerX][playerY] = Tileset.FLOOR;
                     playerX++;
+                    stepCount++;
                 }
             }
             else{
@@ -225,37 +311,66 @@ class Game {
         }
         else if(input == 'Q'){
             if(inputString.charAt(inputString.length()-2) == ':'){
-                try {
-                    File file = new File(saveFile);
-
-                    FileWriter fw = new FileWriter(file, false);
-                    BufferedWriter bw = new BufferedWriter(fw);
-
-                    bw.write(Long.toString(seed));
-                    bw.newLine();
-                    bw.write(Integer.toString(playerX));
-                    bw.newLine();
-                    bw.write(Integer.toString(playerY));
-                    bw.close();
-                    endGame = true;
-                    return;
-                }
-                catch(IOException e){
-                    System.err.println(e.getMessage());
-                }
+                save();
+                endGame = true;
+                return;
             }
         }
         else{
             return;
         }
         //Reduce hunger points by 1 for every 4 steps taken.
-        stepCount++;
         if(stepCount % hungerRate == 0){
-            currentHP--;
+            if(currentHP != 0) {
+                currentHP--;
+            }
+        }
+        if(currentHP == 0){
+            gameResult = -1;
+            endGame = true;
+        }
+    }
+
+    private void finishScreen(char c){
+
+        StdDraw.setPenColor(StdDraw.WHITE);
+        Font smallFont = new Font("Monaco", Font.BOLD, 15);
+        Font titleFont = new Font("Monaco", Font.BOLD, 30);
+
+        StdDraw.setFont(titleFont);
+
+        if(c == 'w'){
+            StdDraw.clear(Color.BLACK);
+            StdDraw.text(MIDWIDTH,MIDHEIGHT,"CONGRATULATIONS, YOU WON!");
+            StdDraw.setFont(smallFont);
+            StdDraw.text(MIDWIDTH,MIDHEIGHT-10,"YOU MAY PRESS Q TO EXIT THE GAME.");
+            StdDraw.show();
+            while(true){
+                if(StdDraw.hasNextKeyTyped()){
+                    if(Character.toUpperCase(StdDraw.nextKeyTyped()) == 'Q'){
+                        return;
+                    }
+                }
+            }
+        }
+        else{
+            StdDraw.clear(Color.BLACK);
+            StdDraw.text(MIDWIDTH,MIDHEIGHT,"GAME OVER. BETTER LUCK NEXT TIME.");
+            StdDraw.setFont(smallFont);
+            StdDraw.text(MIDWIDTH,MIDHEIGHT-10,"YOU MAY PRESS Q TO EXIT THE GAME.");
+            StdDraw.show();
+            while(true){
+                if(StdDraw.hasNextKeyTyped()){
+                    if(Character.toUpperCase(StdDraw.nextKeyTyped()) == 'Q'){
+                        return;
+                    }
+                }
+            }
         }
     }
 
     private void teleportPlayer(){
+        stepCount++;
         world[playerX][playerY] = Tileset.FLOOR;
         Random rand = new Random();
         int x;
@@ -308,7 +423,18 @@ class Game {
     }
 
     private char readMenuInput(){
-        In in = new In(saveFile);
+        boolean fileExists = true;
+        try {
+            FileInputStream fi = new FileInputStream(worldSaveFile);
+            fi.close();
+        }
+        catch (FileNotFoundException f){
+            fileExists = false;
+        }
+        catch (IOException e){
+            System.err.println(e.getMessage());
+        }
+
         while(true) {
             if (StdDraw.hasNextKeyTyped()) {
                 char input = StdDraw.nextKeyTyped();
@@ -316,7 +442,7 @@ class Game {
                     drawMenu(MIDWIDTH, MIDHEIGHT - 10, "Enter Seed: ");
                     return 'N';
                 }
-                else if (Character.toUpperCase(input) == 'L' && !in.isEmpty()) {
+                else if (Character.toUpperCase(input) == 'L' && fileExists) {
                     drawMenu(MIDWIDTH, MIDHEIGHT - 10, "Loading...");
                     StdDraw.pause(400);
                     return 'L';
@@ -364,41 +490,30 @@ class Game {
                 int stopIndex = getStopIndex(input);
                 if(stopIndex > 0) {
                     seed = Integer.parseInt(input.substring(1, stopIndex));
-                    Map m = new Map(WIDTH, HEIGHT, seed,-1,-1);
+                    Map m = new Map(WIDTH, HEIGHT, seed);
                     world = m.generate();
                     playerX = m.playerX;
                     playerY = m.playerY;
 
                     for(int i=stopIndex+1; i< input.length(); i++){
                         parseInput(input.charAt(i));
+                        if(endGame){
+                            break;
+                        }
                     }
                     return world;
                 }
             }
         }
         else if(Character.toUpperCase(input.charAt(0)) == 'L'){
-            try {
-                File f = new File(saveFile);
-                FileReader r = new FileReader(f);
-                BufferedReader b = new BufferedReader(r);
-
-                seed = Long.parseLong(b.readLine());
-                Map m = new Map(WIDTH, HEIGHT, seed,Integer.parseInt(b.readLine()),Integer.parseInt(b.readLine()));
-                b.close();
-
-                world = m.generate();
-
-                playerX = m.playerX;
-                playerY = m.playerY;
-
-                for(int i=1; i< input.length(); i++){
-                    parseInput(input.charAt(i));
+            load();
+            for(int i=1; i< input.length(); i++){
+                parseInput(input.charAt(i));
+                if(endGame){
+                    break;
                 }
-                return world;
             }
-            catch (IOException e){
-                System.err.println(e.getMessage());
-            }
+            return world;
         }
         else if(Character.toUpperCase(input.charAt(0)) == 'Q'){
             System.exit(0);
