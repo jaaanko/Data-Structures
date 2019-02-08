@@ -4,7 +4,6 @@ import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
 
-import edu.princeton.cs.introcs.In;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
@@ -55,8 +54,8 @@ class Game implements Serializable{
             initialize(seed);
         }
         else if(input == 'L') {
-            //Load saved game by reading the saved seed and player position from a text file
             load();
+            startGame(world);
         }
         System.out.println(inputString);
         if(gameResult > 0){
@@ -86,7 +85,7 @@ class Game implements Serializable{
             ObjectInputStream oi = new ObjectInputStream(fi);
 
             ArrayList<Object> woi = (ArrayList<Object>) oi.readObject();
-
+            //Retrieve the stored objects
             Game g = (Game) woi.get(0);
             world = (TETile[][]) woi.get(1);
             this.seed = g.seed;
@@ -96,7 +95,6 @@ class Game implements Serializable{
 
             oi.close();
             fi.close();
-            startGame(world);
         }
         catch(IOException e){
             System.err.println(e.getMessage());
@@ -107,12 +105,14 @@ class Game implements Serializable{
     }
 
     private void save(){
+        //ArrayList to store the Game and TeTile[][] objects
         ArrayList<Object> woi = new ArrayList<>();
         woi.add(this);
         woi.add(world);
         try {
             FileOutputStream f = new FileOutputStream(new File(worldSaveFile));
             ObjectOutputStream o = new ObjectOutputStream(f);
+            //Save the ArrayList with this game object and the world inside.
             o.writeObject(woi);
             o.close();
             f.close();
@@ -121,7 +121,6 @@ class Game implements Serializable{
             System.err.println(e.getMessage());
         }
     }
-    //This method is called when you want to load an existing save
     private void startGame(TETile[][] world){
 
         ter.renderFrame(world);
@@ -319,8 +318,8 @@ class Game implements Serializable{
         else{
             return;
         }
-        //Reduce hunger points by 1 for every 4 steps taken.
-        if(stepCount % hungerRate == 0){
+        //Reduce hunger points by 1 for every 5 steps taken.
+        if(stepCount % hungerRate == 0 && stepCount != 0){
             if(currentHP != 0) {
                 currentHP--;
             }
