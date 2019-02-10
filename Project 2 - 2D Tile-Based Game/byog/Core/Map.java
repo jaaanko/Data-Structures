@@ -75,11 +75,7 @@ class Map {
             rooms.get(i).connectTo(rooms.get(i+1));
         }
     }
-    /*Spawns the player in a random room.
-        If the player xy positions passed to the constructor are negative, generate
-        random positions for the player, since a new game is being started.
-        Otherwise, spawn the player in the given non-negative positions.
-     */
+
     private void spawnPlayer(){
         //if(playerX < 0) {
             Room r = rooms.get(rand.nextInt(rooms.size()));
