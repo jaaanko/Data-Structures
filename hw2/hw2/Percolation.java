@@ -11,7 +11,7 @@ public class Percolation {
     private int top;
     private int bottom;
 
-    Percolation(int N){
+    public Percolation(int N){
         if(N <=0){
             throw new java.lang.IllegalArgumentException();
         }
@@ -85,7 +85,7 @@ public class Percolation {
         return wqu.connected(top,bottom);
     }
 
-    public int convert(int row, int col){
+    private int convert(int row, int col){
         return col + (row*N);
     }
 }
