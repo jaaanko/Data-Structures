@@ -29,14 +29,13 @@ public class Percolation {
             throw new java.lang.IndexOutOfBoundsException();
         }
         if(!isOpen(row,col)) {
-
             grid[row][col] = true;
             openCount++;
             if(row == 0){
                 wqu.union(convert(row,col),top);
                 wqu2.union(convert(row,col),top);
             }
-            else if(row == N-1){
+            if(row == N-1){
                 wqu.union(convert(row,col),bottom);
             }
             if (row + 1 < N) {
@@ -87,5 +86,9 @@ public class Percolation {
 
     private int convert(int row, int col){
         return col + (row*N);
+    }
+
+    public static void main(String[] args){
+
     }
 }

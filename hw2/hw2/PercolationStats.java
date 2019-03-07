@@ -52,14 +52,4 @@ public class PercolationStats {
         return mean() + ((CONFIDENCE_LEVEL_95 * stddev())/Math.sqrt(T));
     }
 
-    //Main method for testing purposes
-    public static void main(String[] args){
-        PercolationFactory pf = new PercolationFactory();
-        PercolationStats ps = new PercolationStats(Integer.parseInt(args[0]),Integer.parseInt(args[1]),pf);
-        double[] confidence = new double[]{ps.confidenceLow(),ps.confidenceHigh()};
-        System.out.println("mean = " + ps.mean());
-        System.out.println("stddev = " + ps.stddev());
-        System.out.println("95% confidence interval = " + Arrays.toString(confidence));
-    }
-
 }
