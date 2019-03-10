@@ -59,7 +59,5 @@ public class Solver {
         public int compareTo(SearchNode s){
             return estimatedCost - s.estimatedCost;
         }
-
-
     }
 }
