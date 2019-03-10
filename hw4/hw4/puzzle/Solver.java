@@ -7,8 +7,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class Solver {
-    public MinPQ<SearchNode> minpq = new MinPQ<>();
-    public List<WorldState> result = new ArrayList<>();
+    private MinPQ<SearchNode> minpq = new MinPQ<>();
+    private List<WorldState> result = new ArrayList<>();
 
     public Solver(WorldState initial){
         minpq.insert(new SearchNode(initial,0,null));

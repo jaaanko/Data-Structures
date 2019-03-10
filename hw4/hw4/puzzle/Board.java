@@ -2,9 +2,9 @@ package hw4.puzzle;
 import edu.princeton.cs.algs4.Queue;
 
 public class Board implements WorldState{
-    public int[][] tiles;
-    public static final int BLANK = 0;
-    public int N;
+    private int[][] tiles;
+    private static final int BLANK = 0;
+    private int N;
 
     public Board(int[][] tiles){
         this.N = tiles.length;
@@ -86,25 +86,17 @@ public class Board implements WorldState{
                 if(tiles[getCorrectRow(x)][getCorrectCol(x)] == BLANK) {
                     wrongRow = N-1;
                     wrongCol = N-1;
-
                     actual = tiles[N-1][N-1];
-                    correctRow = getCorrectRow(actual);
-                    correctCol = getCorrectCol(actual);
-
-                    manhattan += Math.abs(correctRow - wrongRow) + Math.abs(correctCol - wrongCol);
                 }
                 else{
                     wrongRow = getCorrectRow(x);
                     wrongCol = getCorrectCol(x);
-
                     actual = tiles[getCorrectRow(x)][getCorrectCol(x)];
-                    correctRow = getCorrectRow(actual);
-                    correctCol = getCorrectCol(actual);
-
-                    manhattan += Math.abs(correctRow - wrongRow) + Math.abs(correctCol - wrongCol);
                 }
+                correctRow = getCorrectRow(actual);
+                correctCol = getCorrectCol(actual);
+                manhattan += Math.abs(correctRow - wrongRow) + Math.abs(correctCol - wrongCol);
             }
-
         }
         return manhattan;
     }
@@ -126,6 +118,16 @@ public class Board implements WorldState{
             }
         }
         return true;
+    }
+
+    public int hashCode(){
+        int hashCode = 0;
+        for(int i = 0;i < N; i++){
+            for(int j = 0;j < N; j++){
+                hashCode += tileAt(i,j) * 17;
+            }
+        }
+        return hashCode;
     }
 
     public String toString() {
