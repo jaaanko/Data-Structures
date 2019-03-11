@@ -36,17 +36,15 @@ public class MazeBreadthFirstPaths extends MazeExplorer {
 
         while(!fringe.isEmpty()){
             int v = fringe.removeFirst();
+
             for(int w : maze.adj(v)){
                 if(!marked[w]){
-                    if(w == t){
-                        targetFound = true;
-                    }
                     fringe.addLast(w);
                     marked[w] = true;
                     edgeTo[w] = v;
                     distTo[w] = distTo[v] + 1;
                     announce();
-                    if(targetFound){
+                    if(w == t){
                         return;
                     }
                 }
