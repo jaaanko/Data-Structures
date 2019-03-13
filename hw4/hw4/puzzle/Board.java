@@ -27,7 +27,9 @@ public class Board implements WorldState{
         return N;
     }
 
-    // Source: http://joshh.ug/neighbors.html
+    /**
+     * @source http://joshh.ug/neighbors.html
+     */
     public Iterable<WorldState> neighbors(){
         Queue<WorldState> neighbors = new Queue<>();
         int hug = size();
