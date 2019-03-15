@@ -7,10 +7,22 @@ import java.util.Map;
  * seven of the required fields, otherwise the front end code will probably
  * not draw the output correctly.
  */
+
 public class Rasterer {
 
+    private double lrlon;
+    private double ullon;
+    private double w;
+    private double h;
+    private double ullat;
+    private double lrlat;
+    private double queryLonDPP;
+    private static final double ROOT_ULLAT = 37.892195547244356, ROOT_ULLON = -122.2998046875,
+            ROOT_LRLAT = 37.82280243352756, ROOT_LRLON = -122.2119140625;
+    private static final int TILE_SIZE = 256;
+    private static final double ROOT_LONDPP = (ROOT_LRLON - ROOT_ULLON) / TILE_SIZE;
+
     public Rasterer() {
-        // YOUR CODE HERE
     }
 
     /**
@@ -42,11 +54,33 @@ public class Rasterer {
      *                    forget to set this to true on success! <br>
      */
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
-        // System.out.println(params);
+        System.out.println(params);
+
+        this.lrlon = params.get("lrlon");
+        this.ullon = params.get("ullon");
+        this.w = params.get("w");
+        this.h = params.get("h");
+        this.ullat = params.get("ullat");
+        this.lrlat = params.get("lrlat");
+        this.queryLonDPP = (this.lrlon - this.ullon) / this.w;
+
+        System.out.println(getDepth(this.queryLonDPP));
+
         Map<String, Object> results = new HashMap<>();
         System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
                            + "your browser.");
         return results;
     }
+
+    private int getDepth(double LonDPP){
+
+        for(int i = 0;i < 8;i++){
+            if(ROOT_LONDPP / Math.pow(2,i) <= LonDPP){
+                return i;
+            }
+        }
+        return 7;
+    }
+
 
 }
