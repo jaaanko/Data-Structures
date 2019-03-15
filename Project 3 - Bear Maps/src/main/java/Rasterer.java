@@ -81,6 +81,4 @@ public class Rasterer {
         }
         return 7;
     }
-
-
 }
