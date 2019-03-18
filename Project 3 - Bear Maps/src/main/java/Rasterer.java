@@ -17,6 +17,7 @@ public class Rasterer {
     private double ullat;
     private double lrlat;
     private double queryLonDPP;
+
     private static final double ROOT_ULLAT = 37.892195547244356, ROOT_ULLON = -122.2998046875,
             ROOT_LRLAT = 37.82280243352756, ROOT_LRLON = -122.2119140625;
     private static final int TILE_SIZE = 256;
@@ -62,23 +63,93 @@ public class Rasterer {
         this.h = params.get("h");
         this.ullat = params.get("ullat");
         this.lrlat = params.get("lrlat");
-        this.queryLonDPP = (this.lrlon - this.ullon) / this.w;
+        this.queryLonDPP = getLonDPP(lrlon, ullon, w);
 
-        System.out.println(getDepth(this.queryLonDPP));
+        int depth = getDepth(queryLonDPP);
 
+        int[] xPos = fileStartEndX(ullon,lrlon,depth);
+        int[] yPos = fileStartEndY(ullat,lrlat,depth);
+
+        int row = 0;
+        int col = 0;
+
+        int rowLen = (yPos[1] - yPos[0]) + 1;
+        int colLen = (xPos[1] - xPos[0]) + 1;
+
+        String[][] fileNames = new String[rowLen][colLen];
+
+        for(int y = yPos[0];y < yPos[1];y++){
+            for(int x = xPos[0];x < xPos[1];x++){
+                fileNames[row][col] = convertToFileName(depth,x,y);
+                col++;
+            }
+            col = 0;
+            row++;
+        }
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
-                           + "your browser.");
+
+        results.put("render_grid",fileNames);
+
         return results;
     }
 
-    private int getDepth(double LonDPP){
+    /**
+     * Calculates the longitudinal distance per pixel (LonDPP) value.
+     */
+    private double getLonDPP(double lrlon, double ullon, double w){
+        return (lrlon - ullon) / w;
+    }
 
+    /**
+     * Returns the best depth, given a LonDPP value.
+     * If the LonDPP requested is less than what is available in the files, return the maximum depth (7).
+     */
+    private int getDepth(double LonDPP){
         for(int i = 0;i < 8;i++){
             if(ROOT_LONDPP / Math.pow(2,i) <= LonDPP){
                 return i;
             }
         }
         return 7;
+    }
+
+    /**
+     * Returns the longitudinal distance per tile at a given depth.
+     */
+    private double getLonDistancePerTile(int d){
+        return (ROOT_LRLON - ROOT_ULLON) / (Math.pow(2,d));
+    }
+
+    /**
+     * Returns the latitudinal distance per tile at a given depth.
+     */
+    private double getLatDistancePerTile(int d){
+        return (ROOT_ULLAT - ROOT_LRLAT) / (Math.pow(2,d));
+    }
+
+    /**
+     * Returns an int array that stores the x coordinates of the first and last images
+     * that intersect the query box.
+     */
+    private int[] fileStartEndX(double queryUllon, double queryLrlon, int depth){
+
+        int startX = (int) ((queryUllon - ROOT_ULLON) / getLonDistancePerTile(depth));
+        int endX = (int) ((queryLrlon - ROOT_ULLON) / getLonDistancePerTile(depth));
+        return new int[] {startX,endX};
+    }
+
+    /**
+     * Returns an int array that stores the y coordinates of the first and last images
+     * that intersect the query box.
+     */
+    private int[] fileStartEndY(double queryUllat, double queryLrlat, int depth){
+
+        int startX = (int) ((ROOT_ULLAT - queryUllat) / getLatDistancePerTile(depth));
+        int endX = (int) ((ROOT_ULLAT - queryLrlat) / getLatDistancePerTile(depth));
+        return new int[] {startX,endX};
+    }
+
+    private String convertToFileName(int d, int x, int y){
+        return "d" + d + "_x" + x + "_y" + y + ".png";
     }
 }
