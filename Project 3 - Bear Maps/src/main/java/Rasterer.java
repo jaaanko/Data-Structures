@@ -67,8 +67,8 @@ public class Rasterer {
 
         int depth = getDepth(queryLonDPP);
 
-        int[] xPos = fileStartEndX(ullon,lrlon,depth);
-        int[] yPos = fileStartEndY(ullat,lrlat,depth);
+        int[] xPos = getFileStartEndX(ullon,lrlon,depth);
+        int[] yPos = getFileStartEndY(ullat,lrlat,depth);
 
         int row = 0;
         int col = 0;
@@ -77,18 +77,24 @@ public class Rasterer {
         int colLen = (xPos[1] - xPos[0]) + 1;
 
         String[][] fileNames = new String[rowLen][colLen];
-
-        for(int y = yPos[0];y < yPos[1];y++){
-            for(int x = xPos[0];x < xPos[1];x++){
+        for(int y = yPos[0];y <= yPos[1];y++){
+            for(int x = xPos[0];x <= xPos[1];x++){
                 fileNames[row][col] = convertToFileName(depth,x,y);
                 col++;
             }
             col = 0;
             row++;
         }
+
         Map<String, Object> results = new HashMap<>();
 
         results.put("render_grid",fileNames);
+        results.put("raster_ul_lon",getUllon(depth,xPos[0]));
+        results.put("raster_ul_lat",getUllat(depth,yPos[0]));
+        results.put("raster_lr_lon",getLrlon(depth,xPos[1]));
+        results.put("raster_lr_lat",getLrlat(depth,yPos[1]));
+        results.put("depth",depth);
+        results.put("query_success",true);
 
         return results;
     }
@@ -131,10 +137,18 @@ public class Rasterer {
      * Returns an int array that stores the x coordinates of the first and last images
      * that intersect the query box.
      */
-    private int[] fileStartEndX(double queryUllon, double queryLrlon, int depth){
+    private int[] getFileStartEndX(double queryUllon, double queryLrlon, int depth){
 
         int startX = (int) ((queryUllon - ROOT_ULLON) / getLonDistancePerTile(depth));
+        if(startX < 0){
+            startX = 0;
+        }
+
         int endX = (int) ((queryLrlon - ROOT_ULLON) / getLonDistancePerTile(depth));
+        if(endX > Math.pow(2,depth) - 1){
+            endX = (int) Math.pow(2,depth) - 1;
+        }
+
         return new int[] {startX,endX};
     }
 
@@ -142,14 +156,57 @@ public class Rasterer {
      * Returns an int array that stores the y coordinates of the first and last images
      * that intersect the query box.
      */
-    private int[] fileStartEndY(double queryUllat, double queryLrlat, int depth){
+    private int[] getFileStartEndY(double queryUllat, double queryLrlat, int depth){
 
-        int startX = (int) ((ROOT_ULLAT - queryUllat) / getLatDistancePerTile(depth));
-        int endX = (int) ((ROOT_ULLAT - queryLrlat) / getLatDistancePerTile(depth));
-        return new int[] {startX,endX};
+        int startY = (int) ((ROOT_ULLAT - queryUllat) / getLatDistancePerTile(depth));
+        if(startY < 0){
+            startY = 0;
+        }
+
+        int endY = (int) ((ROOT_ULLAT - queryLrlat) / getLatDistancePerTile(depth));
+        if(endY > Math.pow(2,depth) - 1){
+            endY = (int) Math.pow(2,depth) - 1;
+        }
+        return new int[] {startY,endY};
     }
 
+    /**
+     * Converts the given depth, x, and y value into a proper file name.
+     */
     private String convertToFileName(int d, int x, int y){
         return "d" + d + "_x" + x + "_y" + y + ".png";
     }
+
+    /**
+     * Computes the upper-left longitude of an image, given its depth and x value.
+     */
+    private double getUllon(int d, int x){
+        return ROOT_ULLON + (getLonDistancePerTile(d) * x);
+    }
+
+    /**
+     * Computes the lower-right longitude of an image, given its depth and x value.
+     */
+    private double getLrlon(int d, int x){
+        // k represents the maximum value of x
+        double k = Math.pow(2,d) - 1;
+        return ROOT_LRLON - (getLonDistancePerTile(d) * (k-x));
+    }
+
+    /**
+     * Computes the upper-left latitude of an image, given its depth and y value.
+     */
+    private double getUllat(int d, int y){
+        return ROOT_ULLAT - (getLatDistancePerTile(d) * y);
+    }
+
+    /**
+     * Computes the lower-right latitude of an image, given its depth and y value.
+     */
+    private double getLrlat(int d, int y){
+        // k represents the maximum value of y
+        double k = Math.pow(2,d) - 1;
+        return ROOT_LRLAT + (getLatDistancePerTile(d) * (k-y));
+    }
+
 }
