@@ -63,8 +63,22 @@ public class Rasterer {
         this.h = params.get("h");
         this.ullat = params.get("ullat");
         this.lrlat = params.get("lrlat");
-        this.queryLonDPP = getLonDPP(lrlon, ullon, w);
 
+        Map<String, Object> results = new HashMap<>();
+
+        if(!isValid(ullon,lrlon,ullat,lrlat)){
+            results.put("render_grid",new String[1][1]);
+            results.put("raster_ul_lon",-1);
+            results.put("raster_ul_lat",-1);
+            results.put("raster_lr_lon",-1);
+            results.put("raster_lr_lat",-1);
+            results.put("depth",-1);
+            results.put("query_success",false);
+
+            return results;
+        }
+
+        this.queryLonDPP = getLonDPP(lrlon, ullon, w);
         int depth = getDepth(queryLonDPP);
 
         int[] xPos = getFileStartEndX(ullon,lrlon,depth);
@@ -76,19 +90,18 @@ public class Rasterer {
         int rowLen = (yPos[1] - yPos[0]) + 1;
         int colLen = (xPos[1] - xPos[0]) + 1;
 
-        String[][] fileNames = new String[rowLen][colLen];
+        String[][] render_grid = new String[rowLen][colLen];
+
         for(int y = yPos[0];y <= yPos[1];y++){
             for(int x = xPos[0];x <= xPos[1];x++){
-                fileNames[row][col] = convertToFileName(depth,x,y);
+                render_grid[row][col] = convertToFileName(depth,x,y);
                 col++;
             }
             col = 0;
             row++;
         }
 
-        Map<String, Object> results = new HashMap<>();
-
-        results.put("render_grid",fileNames);
+        results.put("render_grid",render_grid);
         results.put("raster_ul_lon",getUllon(depth,xPos[0]));
         results.put("raster_ul_lat",getUllat(depth,yPos[0]));
         results.put("raster_lr_lon",getLrlon(depth,xPos[1]));
@@ -138,7 +151,6 @@ public class Rasterer {
      * that intersect the query box.
      */
     private int[] getFileStartEndX(double queryUllon, double queryLrlon, int depth){
-
         int startX = (int) ((queryUllon - ROOT_ULLON) / getLonDistancePerTile(depth));
         if(startX < 0){
             startX = 0;
@@ -157,7 +169,6 @@ public class Rasterer {
      * that intersect the query box.
      */
     private int[] getFileStartEndY(double queryUllat, double queryLrlat, int depth){
-
         int startY = (int) ((ROOT_ULLAT - queryUllat) / getLatDistancePerTile(depth));
         if(startY < 0){
             startY = 0;
@@ -207,6 +218,21 @@ public class Rasterer {
         // k represents the maximum value of y
         double k = Math.pow(2,d) - 1;
         return ROOT_LRLAT + (getLatDistancePerTile(d) * (k-y));
+    }
+
+    /**
+     * Checks validity of coordinates.
+     */
+    private boolean isValid(double ullon, double lrlon, double ullat, double lrlat) {
+        // Checks if the ullon is to the left of lrlon or ullat is below lrlat.
+        if(ullon > lrlon || ullat < lrlat){
+            return false;
+        }
+        // Checks if query box is completely outside of the root longitudes/latitudes
+        if(!(ROOT_ULLON < lrlon && ROOT_LRLON > ullon && ROOT_ULLAT > lrlat && ROOT_LRLAT < ullat)){
+            return false;
+        }
+        return true;
     }
 
 }
