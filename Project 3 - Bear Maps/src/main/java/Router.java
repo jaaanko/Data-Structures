@@ -1,5 +1,4 @@
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,9 +22,57 @@ public class Router {
      * @param destlat The latitude of the destination location.
      * @return A list of node id's in the order visited on the shortest path.
      */
+
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
-        return null; // FIXME
+
+        PriorityQueue<GraphDB.Node> minPQ = new PriorityQueue<>();
+        HashSet<Long> marked = new HashSet<>();
+        HashMap<Long,Double> bestDistOf = new HashMap<>();
+        HashMap<Long,Long> parentOf = new HashMap<>();
+
+        GraphDB.Node source = g.nodes.get(g.closest(stlon,stlat));
+        GraphDB.Node end = g.nodes.get(g.closest(destlon,destlat));
+        GraphDB.Node v,w;
+
+        source.setDistances(0,g.distance(source.id,end.id));
+
+        for(Long id : g.nodes.keySet()){
+            bestDistOf.put(id,Double.POSITIVE_INFINITY);
+        }
+
+        bestDistOf.put(source.id,0.0);
+        parentOf.put(source.id,null);
+        minPQ.add(source);
+
+        while(minPQ.peek().heuristic != 0){
+            v = minPQ.poll();
+            if(marked.contains(v.id)){
+                continue;
+            }
+            marked.add(v.id);
+
+            for(Long wId: g.adjacent(v.id)){
+                w = g.nodes.get(wId);
+
+                if(bestDistOf.get(v.id) + g.distance(v.id,w.id) < bestDistOf.get(w.id)){
+                    bestDistOf.put(w.id,bestDistOf.get(v.id) + g.distance(v.id,w.id));
+                    w.setDistances(bestDistOf.get(w.id), g.distance(w.id, end.id));
+                    minPQ.add(w);
+                    parentOf.put(w.id,v.id);
+                }
+            }
+        }
+
+        LinkedList<Long> path = new LinkedList<>();
+        Long tmp = minPQ.poll().id;
+
+        while(tmp != null){
+            path.addFirst(tmp);
+            tmp = parentOf.get(tmp);
+        }
+
+        return path;
     }
 
     /**

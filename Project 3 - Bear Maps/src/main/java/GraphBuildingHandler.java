@@ -81,7 +81,7 @@ public class GraphBuildingHandler extends DefaultHandler {
 
         } else if (qName.equals("way")) {
             activeState = "way";
-            System.out.println("Beginning a way...");
+            //System.out.println("Beginning a way...");
         } else if (activeState.equals("way") && qName.equals("nd")) {
             possibleNodes.push(Long.parseLong(attributes.getValue("ref")));
             /* Hint1: It would be useful to remember what was the last node in this way. */
@@ -126,7 +126,7 @@ public class GraphBuildingHandler extends DefaultHandler {
             /* We are done looking at a way. (We finished looking at the nodes, speeds, etc...)*/
             /* Hint1: If you have stored the possible connections for this way, here's your
             chance to actually connect the nodes together if the way is valid. */
-            System.out.println("Finishing a way...");
+            //System.out.println("Finishing a way...");
             if(isValid){
                 while(possibleNodes.size() > 1){
                     g.addEdge(possibleNodes.pop(),possibleNodes.peek());

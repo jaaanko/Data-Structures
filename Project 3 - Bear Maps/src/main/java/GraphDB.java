@@ -27,7 +27,7 @@ public class GraphDB {
      * @param dbPath Path to the XML file to be parsed.
      */
 
-    private Map<Long, Node> nodes = new HashMap<>();
+    Map<Long, Node> nodes = new HashMap<>();
 
     public GraphDB(String dbPath) {
         try {
@@ -190,12 +190,14 @@ public class GraphDB {
         nodes.get(w).adjacent.add(v);
     }
 
-    static class Node{
+    static class Node implements Comparable<Node>{
         long id;
         double lat;
         double lon;
         Set<Long> adjacent;
         String name;
+        double distFromS;
+        double heuristic;
 
         Node(long id,double lon,double lat){
             this.id = id;
@@ -207,6 +209,19 @@ public class GraphDB {
 
         void setName(String name){
             this.name = name;
+        }
+
+        String getName(){
+            return this.name;
+        }
+
+        void setDistances(double g,double h){
+            this.distFromS = g;
+            this.heuristic = h;
+        }
+
+        public int compareTo(Node n){
+            return Double.compare((distFromS + heuristic),(n.distFromS + n.heuristic));
         }
     }
 }
